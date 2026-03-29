@@ -63,9 +63,13 @@ const Navbar = () => {
               >
                 Generate
               </Link>
+              <Link href="/neurobot" className="text-sm text-white/70 hover:text-white transition-colors">
+                Neurobot
+              </Link>
               <Link href="/profile" className="text-sm text-white/70 hover:text-white transition-colors">
                 Profile
               </Link>
+              
             </>
           ) : (
             <>

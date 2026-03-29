@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NeuroFit AI - Get Jacked",
+  title: "NeuroFit2.0",
   description: "A modern fitness AI platform to get jacked for free.",
 };
 

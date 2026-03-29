@@ -151,7 +151,13 @@ yarn start
 * **convex**: Backend logic, schema, and HTTP endpoints
 * **public**: Static assets
 
+## Project Structure
 
+* **src/app**: Next.js routes (App Router)
+* **src/app/components**: Page-level components (landing, program, profile)
+* **src/components/ui**: Shared UI components (shadcn/ui)
+* **convex**: Backend logic, schema, and HTTP endpoints
+* **public**: Static assets
 
 ## Environment Variable Reference
 
