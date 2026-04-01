@@ -1,9 +1,9 @@
-import Hero from "./components/landing/Hero";
-import Features from "./components/landing/Features";
-import About from "./components/landing/About";
-import Testimonials from "./components/landing/Testimonials";
-import Pricing from "./components/landing/Pricing";
-import CTA from "./components/landing/CTA";
+import Hero from "../components/landing/Hero";
+import Features from "../components/landing/Features";
+import About from "../components/landing/About";
+import Testimonials from "../components/landing/Testimonials";
+import Pricing from "../components/landing/Pricing";
+import CTA from "../components/landing/CTA";
 
 const HomePage = () => {
   return (

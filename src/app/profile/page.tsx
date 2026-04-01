@@ -4,13 +4,12 @@ import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useState } from "react";
-import ProfileHeader from "../components/profile/ProfileHeader";
-import NoFitnessPlan from "../components/profile/NoFitnessPlan";
-import PlanDetails from "../components/profile/PlanDetails";
-import PlanSelector from "../components/profile/PlanSelector";
-import ProfileSkeleton from "../components/profile/ProfileSkeleton";
+import ProfileHeader from "../../components/profile/ProfileHeader";
+import NoFitnessPlan from "../../components/profile/NoFitnessPlan";
+import PlanDetails from "../../components/profile/PlanDetails";
+import PlanSelector from "../../components/profile/PlanSelector";
+import ProfileSkeleton from "../../components/profile/ProfileSkeleton";
 import { Id } from "../../../convex/_generated/dataModel";
-
 
 const ProfilePage = () => {
   const { user } = useUser();
@@ -44,7 +43,6 @@ const ProfilePage = () => {
       window.location.reload();
     }
   };
-
 
   return (
     <section className="max-w-5xl relative z-10 pt-20 pb-32 flex-grow container mx-auto px-4 md:px-6 ">

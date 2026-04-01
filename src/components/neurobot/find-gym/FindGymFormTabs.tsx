@@ -9,15 +9,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { MapPin, Dumbbell } from "lucide-react";
-import { motion } from "motion/react";
+import { MapPin, House } from "lucide-react";
+import { GymMap } from "../GymMap";
 
 type NeurobotFormTabsProps = {
   form: any;
   inputClassName: string;
 };
 
-// helpers (reuse dari ProgramFormTabs)
 const getStringValue = (value: unknown) =>
   typeof value === "string" ? value : "";
 
@@ -34,19 +33,13 @@ const NeurobotFormTabs = ({
   inputClassName,
 }: NeurobotFormTabsProps) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.1 }}
-      className="relative backdrop-blur-md border border-white/10 bg-white/5 rounded-lg p-3 md:p-7 overflow-hidden mt-10"
-    >
+    <div className="relative backdrop-blur-md border border-white/10 bg-white/5 rounded-lg p-3 md:p-7 overflow-hidden mt-10">
       <Tabs defaultValue="gym" className="w-full">
-        {/* Tabs Header */}
         <div className="mb-6">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="gym" className="font-mono text-sm">
-              <Dumbbell className="size-4" />
-              Gym
+              <House className="size-4" />
+              Location
             </TabsTrigger>
 
             <TabsTrigger value="map" className="font-mono text-sm">
@@ -55,8 +48,6 @@ const NeurobotFormTabs = ({
             </TabsTrigger>
           </TabsList>
         </div>
-
-        {/* ================= GYM TAB ================= */}
         
         <TabsContent value="gym" className="space-y-6">
           <div>
@@ -67,7 +58,6 @@ const NeurobotFormTabs = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* LOCATION */}
             <form.Field
               name="location"
               validators={requiredValidator("Location")}
@@ -95,7 +85,6 @@ const NeurobotFormTabs = ({
               }}
             />
 
-            {/* GYM TYPE */}
             <form.Field
               name="gymType"
               validators={requiredValidator("Gym type")}
@@ -132,7 +121,6 @@ const NeurobotFormTabs = ({
               }}
             />
 
-            {/* PRICE RANGE */}
             <form.Field
               name="priceRange"
               children={(field: any) => {
@@ -159,7 +147,6 @@ const NeurobotFormTabs = ({
               }}
             />
 
-            {/* RADIUS */}
             <form.Field
               name="radius"
               children={(field: any) => {
@@ -189,16 +176,13 @@ const NeurobotFormTabs = ({
           </div>
         </TabsContent>
 
-        {/* ================= MAP TAB ================= */}
-        <TabsContent value="map">
-          <div className="flex items-center justify-center h-64 border border-dashed border-white/10 rounded-lg">
-            <p className="text-white/50 text-sm font-mono">
-              Map preview coming soon...
-            </p>
+        <TabsContent value="map" className="p-0 m-0">
+          <div className="w-full h-screen">
+            <GymMap />
           </div>
         </TabsContent>
       </Tabs>
-    </motion.div>
+    </div>
   );
 };
 

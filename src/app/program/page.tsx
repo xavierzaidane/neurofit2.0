@@ -4,9 +4,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useForm } from "@tanstack/react-form";
-import ProgramFormTabs from "../components/program/ProgramFormTabs";
-import ProgramFormActions from "../components/program/ProgramFormActions";
-import ProgramFormSkeleton from "../components/program/ProgramFormSkeleton";
+import ProgramFormTabs from "../../components/program/ProgramFormTabs";
+import ProgramFormActions from "../../components/program/ProgramFormActions";
+import ProgramFormSkeleton from "../../components/program/ProgramFormSkeleton";
 import LoadingScreen from "@/app/loading/page";
 import {
 	initialProgramFormData,

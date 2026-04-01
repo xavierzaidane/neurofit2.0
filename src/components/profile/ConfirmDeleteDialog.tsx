@@ -22,7 +22,7 @@ const ConfirmDeleteDialog = ({
 }: ConfirmDeleteDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border border-white/10 bg-white/5 bg-card">
+      <DialogContent className="border border-white/10 bg-white/5">
         <DialogHeader>
           <DialogTitle className="font-mono font-bold text-white">Delete Plan</DialogTitle>
           <DialogDescription className="text-white/70 text-sm font-mono mt-2">

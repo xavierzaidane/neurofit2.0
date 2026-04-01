@@ -7,7 +7,7 @@ import {
   UserButton,
   useUser,
 } from "@clerk/nextjs";
-import { Menu, X, ZapIcon } from "lucide-react";
+import { Menu, X, } from "lucide-react";
 import Link from "next/link";
 import { AnimatePresence, motion, useScroll, useTransform } from "motion/react";
 import { useState } from "react";
@@ -144,6 +144,13 @@ const Navbar = () => {
                     className="text-white/70 hover:text-foreground transition-colors"
                   >
                     Generate
+                  </Link>
+                    <Link
+                    href="/neurobot"
+                    onClick={() => setIsOpen(false)}
+                    className="text-white/70 hover:text-foreground transition-colors"
+                  >
+                    Neurobot
                   </Link>
                   <Link
                     href="/profile"
