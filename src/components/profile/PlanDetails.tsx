@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "motion/react";
 import {
   AppleIcon,
@@ -10,6 +11,7 @@ import {
   Share2,
   ShoppingCart,
 } from "lucide-react";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Accordion,
@@ -17,6 +19,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import PlanPDF from "@/components/pdf/PlanPDF";
 
 type WorkoutRoutine = {
   name: string;
@@ -71,14 +74,17 @@ type PlanDetailsProps = {
   grocerylistPlan?: GroceryListPlan;
 };
 
-const PlanDetails = ({ plan, macrosPlan, grocerylistPlan }: PlanDetailsProps) => (
-  <>
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.2 }}
-      className="relative border border-white/10 bg-white/5 rounded-lg p-6 md:p-8 overflow-hidden"
-    >
+const PlanDetails = ({ plan, macrosPlan, grocerylistPlan }: PlanDetailsProps) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="relative border border-white/10 bg-white/5 rounded-lg p-6 md:p-8 overflow-hidden"
+      >
       <div className="flex items-center gap-3 mb-6">
         <h3 className="text-lg font-mono font-bold text-white">
           PLAN: <span className="text-foreground">{plan.name}</span>
@@ -259,15 +265,25 @@ const PlanDetails = ({ plan, macrosPlan, grocerylistPlan }: PlanDetailsProps) =>
         Share
       </button>
 
-      <button
-        type="button"
-        className="flex items-center  px-4 py-2 text-sm font-mono text-black hover:text-white bg-white hover:bg-foreground rounded-lg transition-colors font-semibold"
+      <PDFDownloadLink
+        document={<PlanPDF plan={plan} macrosPlan={macrosPlan} grocerylistPlan={grocerylistPlan} />}
+        fileName="workout-plan.pdf"
+        onClick={() => setIsGenerating(true)}
       >
-        <Download className="size-4 mr-2" />
-        Download Plan
-      </button>
+        {({ loading }) => (
+          <button
+            type="button"
+            className="flex items-center px-4 py-2 text-sm font-mono text-black hover:text-white bg-white hover:bg-foreground rounded-lg transition-colors font-semibold"
+            disabled={loading}
+          >
+            <Download className="size-4 mr-2" />
+            {loading ? "Generating..." : "Download Plan"}
+          </button>
+        )}
+      </PDFDownloadLink>
     </div>
   </>
-);
+  );
+};
 
 export default PlanDetails;
