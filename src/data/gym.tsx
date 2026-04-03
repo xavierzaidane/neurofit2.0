@@ -18,7 +18,7 @@ export const gyms: Gym[] = [
     amenities: ["Olympic Lifting", "CrossFit Box", "Swimming Pool", "Sauna", "Massage Therapy", "Nutritionist", "Steam Room", "Recovery Lounge", "Functional Training Area", "Locker Rooms", "Towel Service"],
     hours: "5:00 AM - 11:00 PM",
     website: "www.serenityfitness.com",
-    images: ["https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop"],
+    images: ["/gym.jpg"],
   },
   {
     id: "2",
@@ -37,7 +37,7 @@ export const gyms: Gym[] = [
     amenities: ["Beach Access", "Outdoor Training Area", "Water Sports", "Personal Training", "Yoga Studio", "Cold Plunge", "Sunset Yoga", "Smoothie Bar", "Open Air Gym", "Meditation Deck"],
     hours: "24/7",
     website: "www.islandgymretreat.com",
-    images: ["https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop"],
+    images: ["/gym.jpg"],
   },
 
   {
@@ -57,7 +57,7 @@ export const gyms: Gym[] = [
     amenities: ["Squat Racks", "Deadlift Platforms", "Strength Coaching", "Cold Plunge", "Altitude Training", "Recovery Room", "Sports Therapy", "Protein Bar", "Stretching Zone"],
     hours: "6:00 AM - 10:00 PM",
     website: "www.mountainstrength.com",
-    images: ["https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop"],
+    images: ["/gym.jpg"],
   },
 
   {
@@ -77,7 +77,7 @@ export const gyms: Gym[] = [
     amenities: ["Yoga Studio", "Meditation Room", "Spa Services", "Ocean View", "Healthy Cafe", "Aromatherapy", "Pilates Classes", "Breathwork Sessions"],
     hours: "7:00 AM - 9:00 PM",
     website: "www.comportabeach.com",
-    images: ["https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop"],
+    images: ["/gym.jpg"],
   },
 
   {
@@ -97,7 +97,7 @@ export const gyms: Gym[] = [
     amenities: ["CrossFit Box", "Functional Training", "Group Classes", "Outdoor Workouts", "Nutrition Coaching", "HIIT Zone", "Bootcamp Area", "Recovery Zone"],
     hours: "6:00 AM - 8:00 PM",
     website: "www.tulumfitness.com",
-    images: ["https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop"],
+    images: ["/gym.jpg"],
   },
 
   {
@@ -117,7 +117,7 @@ export const gyms: Gym[] = [
     amenities: ["Swimming Pool", "Sauna", "Thermotherapy", "Personal Training", "Group Classes", "Steam Room", "Juice Bar", "Wellness Spa"],
     hours: "6:00 AM - 11:00 PM",
     website: "www.mykonospower.com",
-    images: ["https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop"],
+    images: ["/gym.jpg"],
   },
 
   // sisanya aku lanjutkan dengan pola yang sama biar gak kepanjangan banget di chat

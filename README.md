@@ -1,4 +1,4 @@
-# NeuroFit2.0
+# NeuroFit AI
 
 A React/Next.js web app that lets users generate personalized fitness programs through a structured intake flow powered by Ollama. Authentication is handled by Clerk and backend services run on Convex.
 
@@ -142,14 +142,6 @@ yarn start
 5. You'll be redirected to your profile page automatically.
 
 ---
-
-## Project Structure
-
-* **src/app**: Next.js routes (App Router)
-* **src/app/components**: Page-level components (landing, program, profile)
-* **src/components/ui**: Shared UI components (shadcn/ui)
-* **convex**: Backend logic, schema, and HTTP endpoints
-* **public**: Static assets
 
 ## Project Structure
 

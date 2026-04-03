@@ -2,8 +2,7 @@
 
 import { memo, useState } from 'react';
 import Image from 'next/image';
-import { motion } from 'motion/react';
-import { ArrowLeft, ArrowRight, Heart, Star, MapPin, Phone } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Star, MapPin, Phone } from 'lucide-react';
 import type { Gym } from '@/types/gym';
 
 interface GymCardProps {
