@@ -262,7 +262,11 @@ const MapView = forwardRef<MapRef, MapProps>(function MapView(
             styleTimeoutRef.current = setTimeout(() => {
                 setIsStyleLoaded(true);
                 if (projectionRef.current) {
-                    map.setProjection(projectionRef.current);
+                    try {
+                        map.setProjection(projectionRef.current);
+                    } catch {
+                        // Ignore projection update race during style transitions.
+                    }
                 }
             }, 100);
         };
@@ -331,7 +335,9 @@ const MapView = forwardRef<MapRef, MapProps>(function MapView(
         currentStyleRef.current = newStyle;
         setIsStyleLoaded(false);
 
-        mapInstance.setStyle(newStyle, { diff: true });
+        // Using diff=false avoids a MapLibre projection migration edge case
+        // where style projection may be undefined during rapid style updates.
+        mapInstance.setStyle(newStyle, { diff: false });
     }, [mapInstance, resolvedTheme, mapStyles, clearStyleTimeout]);
 
     const contextValue = useMemo(

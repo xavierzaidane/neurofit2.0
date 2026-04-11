@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -32,9 +33,16 @@ const NeurobotFormTabs = ({
   form,
   inputClassName,
 }: NeurobotFormTabsProps) => {
+  const [activeTab, setActiveTab] = useState("gym");
+
+  const handleMapLocationSelect = (location: string) => {
+    form.setFieldValue("location", location);
+    setActiveTab("gym");
+  };
+
   return (
     <div className="relative backdrop-blur-md border border-white/10 bg-white/5 rounded-lg p-3 md:p-7 overflow-hidden mt-10">
-      <Tabs defaultValue="gym" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="mb-6">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="gym" className="font-mono text-sm">
@@ -72,7 +80,7 @@ const NeurobotFormTabs = ({
                     </FieldLabel>
                     <input
                       className={inputClassName}
-                      placeholder="e.g. Jakarta Selatan"
+                      placeholder="e.g. Jakarta Selatan, Indonesia"
                       value={getStringValue(field.state.value)}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
@@ -134,12 +142,12 @@ const NeurobotFormTabs = ({
                       onValueChange={(value) => field.handleChange(value)}
                     >
                       <SelectTrigger className={inputClassName}>
-                        <SelectValue placeholder="Select price" />
+                        <SelectValue placeholder="Select monthly budget" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="low">$</SelectItem>
-                        <SelectItem value="medium">$$</SelectItem>
-                        <SelectItem value="high">$$$</SelectItem>
+                        <SelectItem value="low">Budget ($20-$60 / month)</SelectItem>
+                        <SelectItem value="medium">Standard ($61-$100 / month)</SelectItem>
+                        <SelectItem value="high">Premium ($101+ / month)</SelectItem>
                       </SelectContent>
                     </Select>
                   </Field>
@@ -160,13 +168,17 @@ const NeurobotFormTabs = ({
                       onValueChange={(value) => field.handleChange(value)}
                     >
                       <SelectTrigger className={inputClassName}>
-                        <SelectValue placeholder="Select radius" />
+                        <SelectValue placeholder="Select search radius" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="1">1 km (walkable)</SelectItem>
                         <SelectItem value="2">2 km</SelectItem>
                         <SelectItem value="5">5 km</SelectItem>
                         <SelectItem value="10">10 km</SelectItem>
+                        <SelectItem value="15">15 km</SelectItem>
                         <SelectItem value="20">20 km</SelectItem>
+                        <SelectItem value="30">30 km</SelectItem>
+                        <SelectItem value="50">50 km</SelectItem>
                       </SelectContent>
                     </Select>
                   </Field>
@@ -177,8 +189,11 @@ const NeurobotFormTabs = ({
         </TabsContent>
 
         <TabsContent value="map" className="p-0 m-0">
+          <p className="mb-3 text-xs font-mono text-white/70">
+            Click anywhere on the map to select your location.
+          </p>
           <div className="w-full h-screen">
-            <GymMap />
+            <GymMap onLocationSelect={handleMapLocationSelect} />
           </div>
         </TabsContent>
       </Tabs>

@@ -74,12 +74,7 @@ const buildCacheKey = (inputs: {
   workoutDays: string;
 }) =>
   [
-    inputs.age,
-    inputs.weight,
-    inputs.height,
-    inputs.fitnessGoal,
-    inputs.fitnessLevel,
-    inputs.workoutDays,
+    inputs.age, inputs.weight, inputs.height, inputs.fitnessGoal, inputs.fitnessLevel, inputs.workoutDays,
   ]
     .map(normalizeCacheInput)
     .join("|");
@@ -202,7 +197,6 @@ http.route({
   }),
 });
 
-// validate and fix workout plan to ensure it has proper numeric types
 function validateWorkoutPlan(plan: any) {
   const validatedPlan = {
     schedule: plan.schedule,
@@ -218,9 +212,7 @@ function validateWorkoutPlan(plan: any) {
   return validatedPlan;
 }
 
-// validate diet plan to ensure it strictly follows schema
 function validateDietPlan(plan: any) {
-  // only keep the fields we want
   const validatedPlan = {
     dailyCalories:
       typeof plan.dailyCalories === "number"
@@ -272,6 +264,7 @@ http.route({
   handler: httpAction(async () => new Response(null, { status: 204, headers: corsHeaders })),
 });
 
+
 http.route({
   path: "/ollama/generate-program",
   method: "POST",
@@ -280,44 +273,13 @@ http.route({
       const payload = await request.json();
 
       const {
-        user_id,
-        age,
-        height,
-        weight,
-        gender,
-        status,
-        body_fat,
-        injuries,
-        workout_days,
-        training_style,
-        target_timeline,
-        fitness_goal,
-        fitness_level,
-        dietary_restrictions,
-        food_allergies,
-        daily_calories,
-        protein_target,
-        carbs_target,
-        fat_target,
-        meals_per_day,
-        working_hours,
-        sleep_hours,
-        stress_level,
-        workout_time,
-        available_equipment,
-        country_region,
-        city_region,
+        user_id, age, height, weight, gender, status, body_fat, injuries, workout_days, training_style, target_timeline, fitness_goal, fitness_level, dietary_restrictions, food_allergies, daily_calories, protein_target, carbs_target, fat_target, meals_per_day, working_hours, sleep_hours, stress_level, workout_time, available_equipment, country_region, city_region,
       } = payload;
 
       console.log("Payload is here:", payload);
 
       const cacheKey = buildCacheKey({
-        age,
-        weight,
-        height,
-        fitnessGoal: fitness_goal,
-        fitnessLevel: fitness_level,
-        workoutDays: workout_days,
+        age, weight, height, fitnessGoal: fitness_goal, fitnessLevel: fitness_level, workoutDays: workout_days,
       });
 
       const cachedPlan = await ctx.runQuery(api.plans.getPlanByCacheKey, {
@@ -335,25 +297,14 @@ http.route({
           : undefined;
 
         const planId = await ctx.runMutation(api.plans.createPlan, {
-          userId: user_id,
-          name: cachedPlan.name,
-          workoutPlan,
-          dietPlan,
-          grocerylistPlan,
-          macrosPlan,
-          isActive: true,
-          cacheKey,
+          userId: user_id, name: cachedPlan.name, workoutPlan, dietPlan, grocerylistPlan, macrosPlan, isActive: true, cacheKey,
         });
 
         return new Response(
           JSON.stringify({
             success: true,
             data: {
-              planId,
-              workoutPlan,
-              dietPlan,
-              grocerylistPlan,
-              macrosPlan,
+              planId, workoutPlan, dietPlan, grocerylistPlan, macrosPlan,
             },
           }),
           {
@@ -445,12 +396,7 @@ Return a JSON object with this EXACT structure:
       let grocerylistPlan = validateGrocerylistPlan(parsedPlan.grocerylistPlan);
 
       const planId = await ctx.runMutation(api.plans.createPlan, {
-        userId: user_id,
-        dietPlan,
-        grocerylistPlan,
-        isActive: true,
-        macrosPlan,
-        workoutPlan,
+        userId: user_id, dietPlan, grocerylistPlan, isActive: true, macrosPlan, workoutPlan,
         name: `${fitness_goal || "Custom"} Plan - ${new Date().toLocaleDateString()}`,
         cacheKey,
       });
@@ -459,11 +405,7 @@ Return a JSON object with this EXACT structure:
         JSON.stringify({
           success: true,
           data: {
-            planId,
-            workoutPlan,
-            dietPlan,
-            grocerylistPlan,
-            macrosPlan,
+            planId, workoutPlan, dietPlan, grocerylistPlan, macrosPlan,
           },
         }),
         {

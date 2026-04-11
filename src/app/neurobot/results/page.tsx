@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
@@ -19,6 +19,16 @@ import { GymGrid } from '@/components/neurobot/GymGrid';
 
 export default function GymResultsPage() {
   const router = useRouter();
+  const [liveGyms, setLiveGyms] = useState<Gym[]>(gyms);
+  const [isLoadingLiveGyms, setIsLoadingLiveGyms] = useState(false);
+
+  useEffect(() => {
+    const fetchDefaultGyms = () => {
+      setLiveGyms(gyms);
+    };
+
+    fetchDefaultGyms();
+  }, []);
 
   const handleGymClick = (gym: Gym) => {
     router.push(`/neurobot/results/${gym.id}`);
@@ -48,7 +58,11 @@ export default function GymResultsPage() {
       
       <Suspense fallback={<ResultsSkeleton />}>
         <div className="w-full">
-          <GymGrid gyms={gyms} onContactClick={handleGymClick} />
+          {isLoadingLiveGyms ? (
+            <ResultsSkeleton />
+          ) : (
+            <GymGrid gyms={liveGyms} onContactClick={handleGymClick} />
+          )}
         </div>
       </Suspense>
     </section>

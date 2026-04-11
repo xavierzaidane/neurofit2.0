@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { motion } from 'motion/react';
@@ -16,10 +16,12 @@ import {
 import { GymBookingSkeleton } from '@/components/neurobot/booking/GymBookingSkeleton';
 import { gyms } from '@/data/gym';
 import Image from 'next/image';
+import type { Gym } from '@/types/gym';
 
 export default function GymDetailPage() {
   const params = useParams();
   const gymId = params.gymdetail as string;
+
   const gym = gyms.find((g) => g.id === gymId);
 
   if (!gym) {

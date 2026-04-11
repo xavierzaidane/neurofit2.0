@@ -22,6 +22,20 @@ interface GymGridProps {
   onContactClick: (gym: Gym) => void;
 }
 
+const getPriceBucket = (price: number | undefined) => {
+  if (typeof price !== 'number') return '';
+  if (price <= 70) return 'low';
+  if (price <= 95) return 'medium';
+  return 'high';
+};
+
+const normalizePriceFilter = (value: string) => {
+  if (value === 'budget') return 'low';
+  if (value === 'standard') return 'medium';
+  if (value === 'premium') return 'high';
+  return value;
+};
+
 export function GymGrid({ gyms, onContactClick }: GymGridProps) {
   const [sortBy, setSortBy] = useState('default');
   const [comparedGyms, setComparedGyms] = useState<Set<string>>(new Set());
@@ -101,7 +115,21 @@ export function GymGrid({ gyms, onContactClick }: GymGridProps) {
     })
     .filter((gym) => {
       if (appliedFilters.gymTypes.size > 0) {
+        const gymType = (gym.type || '').toLowerCase();
+        const allowedTypes = Array.from(appliedFilters.gymTypes).map((type) =>
+          type.toLowerCase()
+        );
+        if (!allowedTypes.includes(gymType)) return false;
       }
+
+      if (appliedFilters.priceRanges.size > 0) {
+        const gymPriceBucket = getPriceBucket(gym.price);
+        const allowedPriceBuckets = Array.from(appliedFilters.priceRanges).map((range) =>
+          normalizePriceFilter(range)
+        );
+        if (!allowedPriceBuckets.includes(gymPriceBucket)) return false;
+      }
+
       if (appliedFilters.ratings.size > 0) {
         const minRating = Math.min(...Array.from(appliedFilters.ratings).map(Number));
         if ((gym.rating || 0) < minRating) return false;
@@ -116,8 +144,8 @@ export function GymGrid({ gyms, onContactClick }: GymGridProps) {
         <div className="space-y-2">
           <h3 className="text-4xl font-semibold font-mono text-white">Available Gyms</h3>
           <p className="text-sm font-mono text-white/60 max-w-2xl">
-              Discover gyms in your area with our AI-powered gym locator. 
-            </p>
+            Browse and discover gyms in your area that match your preferences.
+          </p>
         </div>
         <Sheet>
           <SheetTrigger asChild>

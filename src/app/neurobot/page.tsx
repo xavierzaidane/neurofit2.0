@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "@tanstack/react-form";
 import NeurobotFormActions from "../../components/neurobot/find-gym/FindGymActions";
@@ -27,6 +28,8 @@ const DEMO_LOCATIONS = [
 
 export default function NeurobotClient() {
   const router = useRouter();
+  const [isLocating, setIsLocating] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const form = useForm({
     defaultValues: {
       location: "",
@@ -50,7 +53,71 @@ export default function NeurobotClient() {
   };
 
   const handleSearch = () => {
+    setAiError(null);
     router.push(`/neurobot/results`);
+  };
+
+  const handleUseCurrentLocation = async () => {
+    if (!navigator.geolocation) {
+      setAiError("Geolocation is not supported by this browser.");
+      return;
+    }
+
+    setAiError(null);
+    setIsLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            const address = data?.address || {};
+            const city =
+              address.city ||
+              address.town ||
+              address.village ||
+              address.county ||
+              "";
+            const country = address.country || "";
+
+            if (city || country) {
+              form.setFieldValue(
+                "location",
+                [city, country].filter(Boolean).join(", ")
+              );
+              setIsLocating(false);
+              return;
+            }
+          }
+        } catch {
+          // fallback to coordinates below if reverse geocoding fails
+        }
+
+        form.setFieldValue("location", `${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+        setIsLocating(false);
+      },
+      (error) => {
+        const locationErrorMap: Record<number, string> = {
+          1: "Location permission denied. Please allow location access.",
+          2: "Location unavailable. Try again in a few seconds.",
+          3: "Location request timed out. Try again.",
+        };
+        setAiError(locationErrorMap[error.code] || "Failed to get current location.");
+        setIsLocating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      }
+    );
   };
 
   return (
@@ -60,8 +127,8 @@ export default function NeurobotClient() {
           <h1 className="text-3xl md:text-3xl font-mono font-semibold tracking-tight text-white">
             Find your nearby gyms
           </h1>
-          <p className="text-sm font-mono text-white/60 mt-2 max-w-2xl">
-            Discover gyms in your area with our AI-powered gym locator. Simply enter your location, and let our AI find and book the best gyms near you.
+              <p className="text-sm font-mono text-white/60 mt-2 max-w-2xl">
+            Discover gyms in your area. Simply enter your location and preferences.
           </p>
         </div>
         <NeurobotFormTabs
@@ -72,8 +139,11 @@ export default function NeurobotClient() {
           form={form}
           onClear={handleClear}
           onGenerateLocation={handleGenerateLocation}
+          onUseCurrentLocation={handleUseCurrentLocation}
           onSearch={handleSearch}
+          isLocating={isLocating}
         />
+        {aiError && <p className="mt-4 text-sm font-mono text-red-300">{aiError}</p>}
       </div>
     </section>
   );
