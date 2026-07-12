@@ -64,4 +64,36 @@ export default defineSchema({
     .index("by_user_id", ["userId"])
     .index("by_active", ["isActive"])
     .index("by_cache_key", ["cacheKey"]),
+
+  gyms: defineTable({
+  placeId:      v.string(),
+  name:         v.string(),
+  address:      v.string(),
+  lat:          v.number(),
+  lng:          v.number(),
+  rating:       v.optional(v.number()),
+  openingHours: v.optional(v.array(v.string())),
+  photos:       v.optional(v.array(v.string())),
+  cachedAt:     v.number(),
+  }).index("by_placeId", ["placeId"]),
+
+  bookings: defineTable({
+    userId:           v.string(),
+    gymId:            v.string(),
+    className:        v.string(),
+    scheduledAt:      v.number(),
+    status:           v.string(),
+    confirmationCode: v.optional(v.string()),
+  }).index("by_userId", ["userId"])
+    .index("by_status", ["status"]),
+
+  reminders: defineTable({
+  userId:    v.string(),
+  bookingId: v.optional(v.string()),
+  remindAt:  v.number(),
+  message:   v.string(),
+  sent:      v.boolean(),
+  }).index("by_sent", ["sent"])
+  .index("by_userId", ["userId"]),
+
 });

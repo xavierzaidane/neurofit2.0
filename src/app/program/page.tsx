@@ -45,8 +45,11 @@ const ProgramPage = () => {
 				return;
 			}
 
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 30000);
+
 			try {
-				const response = await fetch(`${convexHttpUrl}/ollama/generate-program`, {
+				const response = await fetch(`${convexHttpUrl}/generate-program`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
@@ -78,18 +81,39 @@ const ProgramPage = () => {
 						country_region: value.countryRegion,
 						city_region: value.cityRegion,
 					}),
+					signal: controller.signal,
 				});
 
-				const data = await response.json();
+				// R6: Safe response parsing — never call .json() unconditionally
+				let data;
+				const text = await response.text();
+				try {
+					data = text ? JSON.parse(text) : null;
+				} catch {
+					throw new Error(
+						`Server returned non-JSON response (status ${response.status}). Please try again.`
+					);
+				}
+
 				if (!response.ok || !data?.success) {
-					throw new Error(data?.error || "Failed to generate program.");
+					throw new Error(data?.error || `Request failed with status ${response.status}`);
 				}
 
 				setSubmitSuccess(true);
 				router.push("/profile");
 			} catch (error) {
-				setSubmitError(error instanceof Error ? error.message : "  generate program.");
+				// R8: Detect timeout-specific errors
+				if (error instanceof DOMException && error.name === "AbortError") {
+					setSubmitError("Request timed out. The AI is taking too long — please try again.");
+				} else {
+					setSubmitError(
+						error instanceof Error
+							? error.message
+							: "Failed to generate program. Please try again."
+					);
+				}
 			} finally {
+				clearTimeout(timeoutId);
 				setIsSubmitting(false);
 				setShowSubmitLoading(false);
 			}

@@ -6,47 +6,24 @@ import { httpAction } from "./_generated/server";
 
 const http = httpRouter();
 
-const defaultOllamaBaseUrl = "http://127.0.0.1:11434";
-const ollamaBaseUrl =
-  process.env.OLLAMA_BASE_URL ||
-  (process.env.NODE_ENV === "production" ? undefined : defaultOllamaBaseUrl);
-const ollamaModel = process.env.OLLAMA_MODEL;
-const ollamaApiKey = process.env.OLLAMA_API_KEY;
 const corsOrigin = process.env.CORS_ORIGIN || "*";
 const corsHeaders = {
-  "Access-Control-Allow-Origin": corsOrigin,
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "*",
 };
 
-const buildOllamaUrl = (path: string) => {
-  if (!ollamaBaseUrl) {
-    throw new Error(
-      "Missing OLLAMA_BASE_URL environment variable (required in production)."
-    );
-  }
-
-  return new URL(path, ollamaBaseUrl).toString();
-};
-
-const buildOllamaHeaders = () => {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-
-  if (ollamaApiKey) {
-    headers.Authorization = `Bearer ${ollamaApiKey}`;
-  }
-
-  return headers;
-};
+const groqApiKey = process.env.GROQ_API_KEY;
+const groqModel = process.env.GROQ_MODEL || "qwen/qwen3-32b";
 
 const extractJson = (content: string) => {
   const trimmed = content.trim();
   const startIndex = trimmed.indexOf("{");
   const endIndex = trimmed.lastIndexOf("}");
   if (startIndex === -1 || endIndex === -1) {
-    return trimmed;
+    throw new Error(
+      `No JSON object boundaries found in AI response. Content length=${trimmed.length}, preview=${trimmed.slice(0, 100)}`
+    );
   }
   return trimmed.slice(startIndex, endIndex + 1);
 };
@@ -79,34 +56,74 @@ const buildCacheKey = (inputs: {
     .map(normalizeCacheInput)
     .join("|");
 
-const callOllamaChat = async (messages: Array<{ role: string; content: string }>) => {
-  const response = await fetch(buildOllamaUrl("/api/chat"), {
-    method: "POST",
-    headers: buildOllamaHeaders(),
-    body: JSON.stringify({
-      model: ollamaModel,
-      messages,
-      stream: false,
-      format: "json",
-      options: {
-        temperature: 0.4,
-        top_p: 0.9,
-      },
-    }),
-  });
+const GROQ_TIMEOUT_MS = 30_000;
+
+const callGroqChat = async (
+  messages: Array<{ role: string; content: string }>
+) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), GROQ_TIMEOUT_MS);
+
+  let response: Response;
+  try {
+    response = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${groqApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: groqModel,
+          messages,
+          temperature: 0.2, // Lowering temperature reduces structural variance
+          response_format: { type: "json_object" }, // <--- FORCES JSON OUTPUT
+        }),
+        signal: controller.signal,
+      }
+    );
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err?.name === "AbortError") {
+      throw new Error(`Groq request timed out after ${GROQ_TIMEOUT_MS / 1000}s`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Ollama request failed (${response.status}): ${errorText}`);
+    console.error(`Groq HTTP error: status=${response.status}, body=${errorText.slice(0, 500)}`);
+    throw new Error(`Groq request failed (${response.status}): ${errorText.slice(0, 300)}`);
   }
 
   const data = await response.json();
+  const choice = data.choices?.[0];
+  const content =
+    choice?.message?.content ||
+    choice?.message?.reasoning_content ||
+    "";
 
-  return data.message.content;
+  if (!content || !content.trim()) {
+    console.error(
+      "Groq returned empty content. Full response:",
+      JSON.stringify(data).slice(0, 2000)
+    );
+    throw new Error(
+      `Groq returned empty content. finish_reason=${choice?.finish_reason ?? "unknown"}`
+    );
+  }
+
+  console.log(
+    `Groq response OK: finish_reason=${choice?.finish_reason}, content_length=${content.length}`
+  );
+  return content;
 };
 
 const generateFitnessPlan = async (prompt: string) =>
-  callOllamaChat([
+  callGroqChat([
     {
       role: "system",
       content:
@@ -198,77 +215,94 @@ http.route({
 });
 
 function validateWorkoutPlan(plan: any) {
-  const validatedPlan = {
-    schedule: plan.schedule,
-    exercises: plan.exercises.map((exercise: any) => ({
-      day: exercise.day,
-      routines: exercise.routines.map((routine: any) => ({
-        name: routine.name,
-        sets: typeof routine.sets === "number" ? routine.sets : parseInt(routine.sets) || 1,
-        reps: typeof routine.reps === "number" ? routine.reps : parseInt(routine.reps) || 10,
-      })),
-    })),
+  return {
+    schedule: Array.isArray(plan?.schedule) ? plan.schedule : [],
+    exercises: Array.isArray(plan?.exercises) ? plan.exercises.map((exercise: any) => ({
+      day: exercise?.day || "Workout Day",
+      routines: Array.isArray(exercise?.routines) ? exercise.routines.map((routine: any) => ({
+        name: routine?.name || "Exercise",
+        sets: typeof routine?.sets === "number" ? routine.sets : parseInt(routine?.sets) || 3,
+        reps: typeof routine?.reps === "number" ? routine.reps : parseInt(routine?.reps) || 10,
+      })) : [],
+    })) : [],
   };
-  return validatedPlan;
 }
 
 function validateDietPlan(plan: any) {
-  const validatedPlan = {
-    dailyCalories:
-      typeof plan.dailyCalories === "number"
-        ? plan.dailyCalories
-        : parseInt(plan.dailyCalories) || 2000,
-    meals: plan.meals.map((meal: any) => ({
-      name: meal.name,
-      foods: meal.foods,
-    })),
+  return {
+    dailyCalories: typeof plan?.dailyCalories === "number" ? plan.dailyCalories : parseInt(plan?.dailyCalories) || 2000,
+    meals: Array.isArray(plan?.meals) ? plan.meals.map((meal: any) => ({
+      name: meal?.name || "Meal",
+      foods: Array.isArray(meal?.foods) ? meal.foods : [],
+    })) : [],
   };
-  return validatedPlan;
 }
 
 function validateGrocerylistPlan(plan: any) {
-  const validatedPlan = {
-    categories: (plan.categories || []).map((category: any) => ({
-      name: category.name,
-      items: Array.isArray(category.items) ? category.items : [],
-    })),
+  return {
+    // Safely fallback if categories or the plan itself is missing
+    categories: Array.isArray(plan?.categories) 
+      ? plan.categories.map((category: any) => ({
+          name: category?.name || "General",
+          items: Array.isArray(category?.items) ? category.items : [],
+        })) 
+      : [],
   };
-  return validatedPlan;
 }
 
 function validateMacrosPlan(plan: any) {
-  const validatedPlan = {
+  return {
     dailyCalories:
-      typeof plan.dailyCalories === "number"
+      typeof plan?.dailyCalories === "number"
         ? plan.dailyCalories
-        : parseInt(plan.dailyCalories) || 2000,
+        : parseInt(plan?.dailyCalories) || 2000,
     proteinGrams:
-      typeof plan.proteinGrams === "number"
+      typeof plan?.proteinGrams === "number"
         ? plan.proteinGrams
-        : parseInt(plan.proteinGrams) || 120,
+        : parseInt(plan?.proteinGrams) || 120,
     carbsGrams:
-      typeof plan.carbsGrams === "number"
+      typeof plan?.carbsGrams === "number"
         ? plan.carbsGrams
-        : parseInt(plan.carbsGrams) || 200,
+        : parseInt(plan?.carbsGrams) || 200,
     fatGrams:
-      typeof plan.fatGrams === "number"
+      typeof plan?.fatGrams === "number"
         ? plan.fatGrams
-        : parseInt(plan.fatGrams) || 60,
+        : parseInt(plan?.fatGrams) || 60,
   };
-  return validatedPlan;
 }
 
 http.route({
-  path: "/ollama/generate-program",
+  path: "/generate-program",
   method: "OPTIONS",
   handler: httpAction(async () => new Response(null, { status: 204, headers: corsHeaders })),
 });
 
 
 http.route({
-  path: "/ollama/generate-program",
+  path: "/generate-program",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
+    // Helper: classify error into a stable error code
+    const classifyError = (err: unknown): string => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("timed out")) return "GROQ_TIMEOUT";
+      if (msg.includes("empty content")) return "AI_EMPTY_RESPONSE";
+      if (msg.includes("not valid JSON") || msg.includes("No JSON object boundaries"))
+        return "AI_INVALID_JSON";
+      if (msg.includes("Groq request failed")) return "GROQ_REQUEST_FAILED";
+      return "INTERNAL_ERROR";
+    };
+
+    // Helper: build a guaranteed-safe JSON error response
+    const errorResponse = (status: number, message: string, code: string) =>
+      new Response(
+        JSON.stringify({ success: false, error: message, code }),
+        {
+          status,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+
     try {
       const payload = await request.json();
 
@@ -287,6 +321,7 @@ http.route({
       });
 
       if (cachedPlan) {
+        console.log(`Cache HIT for cacheKey=${cacheKey}`);
         const workoutPlan = validateWorkoutPlan(cachedPlan.workoutPlan);
         const dietPlan = validateDietPlan(cachedPlan.dietPlan);
         const macrosPlan = cachedPlan.macrosPlan
@@ -313,6 +348,8 @@ http.route({
           }
         );
       }
+
+      console.log(`Cache MISS for cacheKey=${cacheKey}. Calling Groq...`);
 
       const unifiedPrompt = `You are an experienced fitness and nutrition coach creating a complete plan in a single response.
 
@@ -350,10 +387,10 @@ Requirements:
 - Prefer local foods based on the user's location.
 
 CRITICAL SCHEMA INSTRUCTIONS:
-- Return ONLY valid JSON. No markdown. No explanation.
-- Output MUST contain ONLY the fields shown in the schema below.
-- ALL numeric values MUST be numbers (never strings).
-- Do NOT add extra fields.
+- Return ONLY valid JSON matching the exact structure below.
+- Do NOT wrap your response in markdown text blocks (do NOT use \`\`\`json).
+- Every property specified must be present, and arrays must not be empty.
+- Ensure all numbers (sets, reps, calories, grams) are actual JSON numbers, not strings.
 
 Return a JSON object with this EXACT structure:
 {
@@ -387,13 +424,44 @@ Return a JSON object with this EXACT structure:
   }
 }`;
 
-      const rawPlanText = await generateFitnessPlan(unifiedPrompt);
-      const parsedPlan = safeParseJson(rawPlanText, "unified-plan");
+      // --- Attempt 1: generate + parse ---
+      let parsedPlan: any;
+      try {
+        const rawPlanText = await generateFitnessPlan(unifiedPrompt);
+        parsedPlan = safeParseJson(rawPlanText, "unified-plan");
+      } catch (firstError) {
+        // --- Attempt 2: retry with stricter prompt ---
+        console.warn(
+          "First Groq attempt failed, retrying with stricter prompt:",
+          firstError instanceof Error ? firstError.message : String(firstError)
+        );
 
-      let workoutPlan = validateWorkoutPlan(parsedPlan.workoutPlan);
-      let dietPlan = validateDietPlan(parsedPlan.dietPlan);
-      let macrosPlan = validateMacrosPlan(parsedPlan.macrosPlan);
-      let grocerylistPlan = validateGrocerylistPlan(parsedPlan.grocerylistPlan);
+        try {
+          const retryRaw = await callGroqChat([
+            {
+              role: "system",
+              content:
+                "Your previous response was not valid JSON. You MUST return ONLY a valid JSON object. No markdown, no commentary, no explanation — just the raw JSON object.",
+            },
+            { role: "user", content: unifiedPrompt },
+          ]);
+          parsedPlan = safeParseJson(retryRaw, "unified-plan-retry");
+          console.log("Retry succeeded.");
+        } catch (retryError) {
+          console.error(
+            "Retry also failed:",
+            retryError instanceof Error ? retryError.message : String(retryError)
+          );
+          // Throw the original error so the error code classification is accurate
+          throw firstError;
+        }
+      }
+
+      // The validators now safely execute even if these root keys are completely missing
+      let workoutPlan = validateWorkoutPlan(parsedPlan?.workoutPlan);
+      let dietPlan = validateDietPlan(parsedPlan?.dietPlan);
+      let macrosPlan = validateMacrosPlan(parsedPlan?.macrosPlan);
+      let grocerylistPlan = validateGrocerylistPlan(parsedPlan?.grocerylistPlan);
 
       const planId = await ctx.runMutation(api.plans.createPlan, {
         userId: user_id, dietPlan, grocerylistPlan, isActive: true, macrosPlan, workoutPlan,
@@ -414,17 +482,12 @@ Return a JSON object with this EXACT structure:
         }
       );
     } catch (error) {
-      console.error("Error generating fitness plan:", error);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: error instanceof Error ? error.message : String(error),
-        }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorCode = classifyError(error);
+      console.error(
+        `Error generating fitness plan: code=${errorCode}, message=${errorMessage}`
       );
+      return errorResponse(500, errorMessage, errorCode);
     }
   }),
 });
