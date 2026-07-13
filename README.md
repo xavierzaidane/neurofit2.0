@@ -2,6 +2,9 @@
 
 An AI-powered fitness platform built with Next.js that generates personalized workout programs, diet plans, macro breakdowns, and grocery lists — all from a single intake form. Powered by **Groq** (Qwen3-32B), authenticated with **Clerk**, and backed by **Convex**.
 
+<p align="center">
+  <img src="/public/neurofit2.0.png" alt="Project Image" width="100%">
+</p>
 ---
 
 ## Features
