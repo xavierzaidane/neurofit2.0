@@ -1,15 +1,24 @@
 # NeuroFit AI
 
-A React/Next.js web app that lets users generate personalized fitness programs through a structured intake flow powered by Ollama. Authentication is handled by Clerk and backend services run on Convex.
+An AI-powered fitness platform built with Next.js that generates personalized workout programs, diet plans, macro breakdowns, and grocery lists — all from a single intake form. Powered by **Groq** (Qwen3-32B), authenticated with **Clerk**, and backed by **Convex**.
 
+<p align="center">
+  <img src="/public/neurofit2.0.png" alt="Project Image" width="100%">
+</p>
 ---
 
 ## Features
 
-* Form-based intake for personalized program generation
-* Personalized fitness program generation
-* User authentication with Clerk
-* Smooth UI with Tailwind CSS
+- **AI Program Generation** — Personalized workout schedules, diet plans, macros, and grocery lists generated via Groq's Qwen3-32B model
+- **Multi-step Intake Form** — Structured form flow collecting fitness goals, body metrics, dietary preferences, equipment, and lifestyle data
+- **NeuroBot** — AI chatbot assistant for fitness-related questions
+- **Profile Dashboard** — View and manage generated plans with tabbed navigation (workout, diet, macros, grocery list)
+- **PDF Export** — Download your fitness plans as formatted PDF documents
+- **Gym Finder** — Discover nearby gyms using MapLibre GL maps
+- **Booking & Reminders** — Book gym classes and set workout reminders
+- **Dark Mode** — Theme switching via `next-themes`
+- **Authentication** — Secure sign-in/sign-up powered by Clerk
+- **Plan Caching** — Intelligent caching layer to avoid redundant AI calls for similar user profiles
 
 ---
 
@@ -17,46 +26,61 @@ A React/Next.js web app that lets users generate personalized fitness programs t
 
 ### Core
 
-* **Framework:** Next.js (App Router)
-* **Language:** TypeScript
-* **UI:** React 19
-* **Styling:** Tailwind CSS
+- **Framework:** Next.js 16 (App Router, Turbopack)
+- **Language:** TypeScript
+- **UI:** React 19
+- **Styling:** Tailwind CSS 4
 
 ### UI Components & UX
 
-* **Component system:** shadcn/ui
-* **Primitives:** Radix UI
-* **Icons:** lucide-react
-* **Animation:** motion
+- **Component system:** shadcn/ui
+- **Primitives:** Radix UI
+- **Icons:** Lucide React, Hugeicons
+- **Animation:** Motion (Framer Motion)
+- **Theming:** next-themes
 
 ### Forms & Validation
 
-* **Form state:** TanStack Form
-* **Validation:** Zod (available for schema validation)
+- **Form state:** TanStack Form, React Hook Form
+- **Validation:** Zod
 
 ### Backend & Data
 
-* **Backend:** Convex (database + serverless functions)
-* **HTTP API:** Convex HTTP actions
+- **Backend:** Convex (database + serverless functions)
+- **HTTP API:** Convex HTTP actions
+- **Webhooks:** Svix (Clerk webhook verification)
 
-### Auth & AI
+### AI
 
-* **Authentication:** Clerk
-* **AI runtime:** Ollama (local or hosted)
+- **AI Provider:** [Groq](https://groq.com) (cloud inference)
+- **Model:** `qwen/qwen3-32b`
+- **Features:** JSON-mode output, automatic retry with stricter prompts, response validation & sanitization
+
+### Maps & Location
+
+- **Map rendering:** MapLibre GL
+
+### PDF Generation
+
+- **PDF export:** React-PDF, jsPDF
+
+### Testing
+
+- **E2E testing:** Playwright
 
 ### Utilities
 
-* **Class utilities:** clsx, tailwind-merge, class-variance-authority
+- **Class utilities:** clsx, tailwind-merge, class-variance-authority
 
 ---
 
 ## Prerequisites
 
-* Node.js >= 18
-* npm or yarn
-* Ollama running locally
-* Clerk account & API keys
-* Convex project & deployment
+- Node.js >= 18
+- npm or yarn
+- [Clerk](https://clerk.com) account & API keys
+- [Convex](https://convex.dev) project & deployment
+- [Groq](https://console.groq.com) API key
 
 ---
 
@@ -73,8 +97,6 @@ cd neurofit-ai
 
 ```bash
 npm install
-# or
-yarn
 ```
 
 ### 3. Set up environment variables
@@ -88,47 +110,41 @@ CLERK_SECRET_KEY=your_clerk_secret_key
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 
-
-# Ollama
-OLLAMA_BASE_URL=http://127.0.0.1:11434
-OLLAMA_MODEL=qwen3.5:0.8b
-OLLAMA_API_KEY=your_ollama_api_key
-
-# Convex HTTP
+# Convex
+CONVEX_DEPLOYMENT=dev:your-deployment-name
+NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
 NEXT_PUBLIC_CONVEX_HTTP_URL=https://your-deployment.convex.site
 
-# Convex
-CONVEX_DEPLOYMENT=dev:oceanic-snail-89
-NEXT_PUBLIC_CONVEX_URL=https://oceanic-snail-89.convex.cloud
-
-# Optional CORS
-CORS_ORIGIN=http://localhost:3000
+# Groq AI
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=qwen/qwen3-32b
 ```
 
-> Replace all keys with your actual credentials.
+> Replace all placeholder values with your actual credentials. Groq environment variables are set in the [Convex dashboard](https://dashboard.convex.dev) as server-side env vars.
 
----
+### 4. Start Convex
 
-### 4. Run the development server
+```bash
+npx convex dev
+```
+
+### 5. Run the development server
+
+In a separate terminal:
 
 ```bash
 npm run dev
-# or
-yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-### 5. Build for production
+### Build for production
 
 ```bash
 npm run build
 npm start
-# or
-yarn build
-yarn start
 ```
 
 ---
@@ -136,36 +152,65 @@ yarn start
 ## Usage
 
 1. Sign up or log in via Clerk.
-2. Go to **Program** page.
-3. Fill out the intake form.
-4. Click **Submit** to generate your personalized fitness program.
-5. You'll be redirected to your profile page automatically.
+2. Navigate to the **Program** page.
+3. Complete the multi-step intake form (body metrics, goals, diet, lifestyle).
+4. Click **Generate** — the AI builds your personalized plan.
+5. View your plan on the **Profile** page (workout, diet, macros, grocery list tabs).
+6. Export your plan as a **PDF**.
 
 ---
 
 ## Project Structure
 
-* **src/app**: Next.js routes (App Router)
-* **src/app/components**: Page-level components (landing, program, profile)
-* **src/components/ui**: Shared UI components (shadcn/ui)
-* **convex**: Backend logic, schema, and HTTP endpoints
-* **public**: Static assets
+```
+src/
+├── app/
+│   ├── (auth)/          # Sign-in / Sign-up routes
+│   ├── program/         # Intake form & plan generation
+│   ├── profile/         # User dashboard & plan viewer
+│   ├── neurobot/        # AI chatbot assistant
+│   └── loading/         # Loading states
+├── components/
+│   ├── landing/         # Landing page components
+│   ├── navigations/     # Nav bar & mobile menu
+│   ├── neurobot/        # Chatbot UI components
+│   ├── pdf/             # PDF export components
+│   ├── profile/         # Profile page components
+│   ├── program/         # Intake form components
+│   └── ui/              # Shared UI components (shadcn/ui)
+├── data/                # Static data & constants
+├── lib/                 # Utility functions
+├── providers/           # Context providers (Convex, Clerk, Theme)
+└── types/               # TypeScript type definitions
 
-## Environment Variable Reference
-
-| Variable                            | Description                 |
-| ----------------------------------- | --------------------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk frontend key          |
-| `CLERK_SECRET_KEY`                  | Clerk backend key           |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL`     | Sign-in route               |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL`     | Sign-up route               |
-| `OLLAMA_BASE_URL`                   | Ollama base URL             |
-| `OLLAMA_MODEL`                      | Ollama model name           |
-| `OLLAMA_API_KEY`                    | Ollama cloud API key        |
-| `CONVEX_DEPLOYMENT`                 | Convex deployment reference |
-| `NEXT_PUBLIC_CONVEX_URL`            | Convex endpoint             |
-| `NEXT_PUBLIC_CONVEX_HTTP_URL`       | Convex HTTP endpoint        |
-| `CORS_ORIGIN`                       | Allowed origin for HTTP     |
+convex/
+├── http.ts              # HTTP actions (AI generation, webhooks)
+├── schema.ts            # Database schema (users, plans, gyms, bookings, reminders)
+├── plans.ts             # Plan queries & mutations
+├── users.ts             # User queries & mutations
+└── auth.config.ts       # Clerk auth configuration
+```
 
 ---
 
+## Environment Variable Reference
+
+| Variable | Description |
+| --- | --- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk frontend publishable key |
+| `CLERK_SECRET_KEY` | Clerk backend secret key |
+| `CLERK_WEBHOOK_SECRET` | Svix secret for Clerk webhooks |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Sign-in route path |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Sign-up route path |
+| `CONVEX_DEPLOYMENT` | Convex deployment reference |
+| `NEXT_PUBLIC_CONVEX_URL` | Convex client endpoint |
+| `NEXT_PUBLIC_CONVEX_HTTP_URL` | Convex HTTP actions endpoint |
+| `GROQ_API_KEY` | Groq API key (set in Convex dashboard) |
+| `GROQ_MODEL` | Groq model identifier (default: `qwen/qwen3-32b`) |
+| `CORS_ORIGIN` | Allowed CORS origin for HTTP actions |
+
+---
+
+## License
+
+This project is for educational and personal use.
