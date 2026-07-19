@@ -11,12 +11,10 @@ An AI-powered fitness platform built with Next.js that generates personalized wo
 
 - **AI Program Generation** — Personalized workout schedules, diet plans, macros, and grocery lists generated via Groq's Qwen3-32B model
 - **Multi-step Intake Form** — Structured form flow collecting fitness goals, body metrics, dietary preferences, equipment, and lifestyle data
-- **Neurobot Virtual Coach** — AI conversational assistant powered by Google AI Studio (Gemini) featuring customizable coaching personalities, markdown streaming, session management, and reasoning display
+- **Neurobot Chatbot** — AI conversational assistant powered by Google AI Studio (Gemini) featuring customizable coaching personalities, markdown streaming, session management, and reasoning display
 - **Slash Commands** — Command shortcuts including `/findgym` for geocoding and discovering local gyms, `/templates` for fitness prompt templates, `/history` for browsing past sessions, and `/new` to reset
 - **Profile Dashboard** — View and manage generated plans with tabbed navigation (workout, diet, macros, grocery list)
 - **PDF Export** — Download your fitness plans as formatted PDF documents
-- **Gym Finder** — Discover nearby gyms using MapLibre GL maps
-- **Booking & Reminders** — Book gym classes and set workout reminders
 - **Dark Mode** — Theme switching via `next-themes`
 - **Authentication** — Secure sign-in/sign-up powered by Clerk
 - **Plan Caching** — Intelligent caching layer to avoid redundant AI calls for similar user profiles
