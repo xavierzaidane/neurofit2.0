@@ -2,6 +2,9 @@ import { NextRequest } from "next/server";
 import { modelsConfig } from "@/app/neurobot/config/models.config";
 import { personalitiesConfig } from "@/app/neurobot/config/personalities.config";
 
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   const abortController = new AbortController();
   const timeoutId = setTimeout(() => abortController.abort(), 20000); // 20-second timeout

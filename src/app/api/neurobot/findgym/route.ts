@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 // Dynamic lock to rate-limit Nominatim geocoding requests to 1 req/sec
 let lastNominatimRequestTime = 0;
 
