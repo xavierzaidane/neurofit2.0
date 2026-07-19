@@ -39,13 +39,10 @@ const PlanSelector = ({
   >
     <div className="flex items-start justify-between mb-9">
       <div>
-        <h2 className="text-3xl md:text-2xl font-mono tracking-tighter font-display text-white">
+        <h2 className="text-3xl md:text-2xl font-normal tracking-tight text-white selection:bg-[var(--foreground)]/30">
           <span className="text-white">Your</span>{" "}
           <span className="text-white">Fitness Plans</span>
         </h2>
-        <p className="text-sm font-mono text-muted-foreground mt-1">
-          Manage and track all your fitness plans
-        </p>
       </div>
 
       <div className="font-mono text-xs text-muted-foreground px-3 py-1">

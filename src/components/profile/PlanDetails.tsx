@@ -273,7 +273,7 @@ const PlanDetails = ({ plan, macrosPlan, grocerylistPlan }: PlanDetailsProps) =>
         {({ loading }) => (
           <button
             type="button"
-            className="flex items-center px-4 py-2 text-sm font-mono text-black hover:text-white bg-white hover:bg-foreground rounded-lg transition-colors font-semibold"
+            className="flex items-center px-4 py-2 text-sm font-mono text-black hover:text-black bg-foreground hover:bg-foreground/50 rounded-lg transition-colors font-semibold"
             disabled={loading}
           >
             <Download className="size-4 mr-2" />

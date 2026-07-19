@@ -80,7 +80,7 @@ const ProgramFormActions = ({
         <button
           type="submit"
           disabled={isSubmitting || isLoading}
-          className="flex items-center  px-4 py-2 text-sm font-mono text-black hover:text-white bg-white rounded-lg hover:bg-foreground transition-colors font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+          className="flex items-center  px-4 py-2 text-sm font-mono text-black hover:text-black bg-foreground rounded-lg hover:bg-foreground/50 transition-colors font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isSubmitting ? "Submitting..." : "Submit"}
           <ArrowUpRight className="h-4 w-4" />

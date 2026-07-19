@@ -1,8 +1,15 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  if (pathname && pathname.startsWith('/neurobot')) {
+    return null;
+  }
+
   return (
     <footer className="border-t border-white/10 bg-black">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
