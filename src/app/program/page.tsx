@@ -147,7 +147,7 @@ const ProgramPage = () => {
 				onSubmit={handleSubmit}
 			>
 				<div className="text-left pt-10">
-					<h1 className="text-3xl md:text-3xl font-mono font-semibold tracking-tight text-white">
+					<h1 className="text-3xl md:text-3xl font-normal tracking-tight text-white selection:bg-[var(--foreground)]/30 text-white">
 						Fitness Plan Intake
 					</h1>
 					<p className="text-sm font-mono text-white/60 mt-2">

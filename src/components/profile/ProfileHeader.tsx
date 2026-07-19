@@ -31,12 +31,12 @@ const ProfileHeader = ({ user }: { user: any }) => {
 
         <div className="flex-1">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-            <h1 className="text-4xl md:text-2xl font-mono font-semibold tracking-tighter text-white font-display">
+            <h1 className="text-4xl md:text-2xl font-normal tracking-tight text-white selection:bg-[var(--foreground)]/30 text-white font-display">
               {user.fullName}
             </h1>
           </div>
        
-          <p className="text-white/70 font-mono text-sm md:text-base -mt-3">
+          <p className="text-white/70 font-normal tracking-tight text-white selection:bg-[var(--foreground)]/30 md:text-base -mt-3">
             {user.primaryEmailAddress?.emailAddress}
           </p>
         </div>

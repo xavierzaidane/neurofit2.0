@@ -73,7 +73,7 @@ export default function Hero() {
             className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
           >
              <Link href={"/program"} >
-            <button className="group flex items-center justify-center gap-2 bg-white text-black px-8 py-4 rounded-full font-medium text-lg hover:bg-foreground hover:text-white transition-all hover:scale-105 active:scale-95 duration-300 w-full sm:w-auto">
+            <button className="group flex items-center justify-center gap-2 bg-foreground text-black px-8 py-4 rounded-full font-medium text-lg hover:bg-foreground hover:text-white transition-all hover:scale-105 active:scale-95 duration-300 w-full sm:w-auto">
               Build My Plan
               
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

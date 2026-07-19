@@ -10,9 +10,11 @@ import {
 import { Menu, X, } from "lucide-react";
 import Link from "next/link";
 import { AnimatePresence, motion, useScroll, useTransform } from "motion/react";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const Navbar = () => {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const { isSignedIn } = useUser();
   const { scrollY } = useScroll();
