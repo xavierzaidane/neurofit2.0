@@ -1,11 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Trash2, ExternalLink } from "lucide-react";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface PlansTableProps {
   plans: any[];
@@ -14,13 +22,30 @@ interface PlansTableProps {
 }
 
 export const PlansTable: React.FC<PlansTableProps> = ({ plans, onSelectPlan, onDeletePlan }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
+
+  const totalPages = Math.ceil(plans.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const currentPlans = plans.slice(startIndex, endIndex);
+
+  // If plans list length shrinks (e.g. deletion) such that currentPage is out of bounds, reset
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [plans.length, totalPages, currentPage]);
+
   return (
     <Card className="bg-card border-border select-none hover:border-border/80 transition-all duration-300 flex flex-col justify-between h-full shadow-sm">
       <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-4">
         <div className="space-y-1">
           <CardTitle className="text-base text-card-foreground font-normal">Fitness Plans</CardTitle>
           <CardDescription className="text-xs text-muted-foreground">
-            {plans.length} {plans.length === 1 ? "plan" : "plans"} listed
+            {plans.length === 0
+              ? "0 plans listed"
+              : `Showing ${startIndex + 1}-${Math.min(endIndex, plans.length)} of ${plans.length} ${plans.length === 1 ? "plan" : "plans"} listed`}
           </CardDescription>
         </div>
       </CardHeader>
@@ -38,7 +63,7 @@ export const PlansTable: React.FC<PlansTableProps> = ({ plans, onSelectPlan, onD
             </TableRow>
           </TableHeader>
           <TableBody className="divide-y divide-border/30">
-            {plans.map((plan) => {
+            {currentPlans.map((plan) => {
               const createdDate = new Date(plan._creationTime).toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "2-digit",
@@ -123,6 +148,55 @@ export const PlansTable: React.FC<PlansTableProps> = ({ plans, onSelectPlan, onD
           </TableBody>
         </Table>
       </CardContent>
+
+      {totalPages > 1 && (
+        <CardFooter className="pt-2 pb-6 border-t border-border/10">
+          <Pagination className="w-full justify-center">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage > 1) setCurrentPage(currentPage - 1);
+                  }}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50 cursor-not-allowed" : "cursor-pointer"}
+                />
+              </PaginationItem>
+              
+              {Array.from({ length: totalPages }).map((_, i) => {
+                const pageNumber = i + 1;
+                return (
+                  <PaginationItem key={pageNumber}>
+                    <PaginationLink
+                      href="#"
+                      isActive={currentPage === pageNumber}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage(pageNumber);
+                      }}
+                      className="cursor-pointer"
+                    >
+                      {pageNumber}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                  }}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50 cursor-not-allowed" : "cursor-pointer"}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </CardFooter>
+      )}
     </Card>
   );
 };

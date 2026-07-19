@@ -63,28 +63,60 @@ export async function GET(req: NextRequest) {
     let lng = 0;
     let resolvedName = "";
 
-    const userAgent = "NeuroFit/2.0 (contact: support@neurofit-app.example.com)";
+    const userAgent = "NeuroFit/2.0 (contact: xavier.zaidane@gmail.com)";
 
     // Step 1: Geocode if location text is provided
     if (location) {
-      await rateLimitNominatim();
+      const queryAttempts = [location.trim()];
       
-      const geocodeUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-        location
-      )}&format=json&limit=1`;
-
-      const geocodeResponse = await fetch(geocodeUrl, {
-        headers: {
-          "User-Agent": userAgent,
-        },
-        signal: AbortSignal.timeout(10000), // 10s timeout
-      });
-
-      if (!geocodeResponse.ok) {
-        throw new Error(`Nominatim geocoding error: ${geocodeResponse.statusText}`);
+      // If query has commas, add simplified versions as fallbacks
+      if (location.includes(",")) {
+        const parts = location.split(",").map(p => p.trim()).filter(Boolean);
+        // Fallback 1: Drop the first part (e.g. suite/apt/unit info)
+        if (parts.length > 1) {
+          queryAttempts.push(parts.slice(1).join(", "));
+        }
+        // Fallback 2: Keep only the city/state/country info (last 2 parts)
+        if (parts.length > 2) {
+          queryAttempts.push(parts.slice(-2).join(", "));
+        }
+        // Fallback 3: Keep only the last part (usually city or country)
+        if (parts.length > 1) {
+          queryAttempts.push(parts[parts.length - 1]);
+        }
       }
 
-      const geocodeResults = await geocodeResponse.json();
+      let geocodeResults: any[] = [];
+      for (const queryAttempt of queryAttempts) {
+        try {
+          await rateLimitNominatim();
+          const geocodeUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+            queryAttempt
+          )}&format=json&limit=1`;
+
+          const geocodeResponse = await fetch(geocodeUrl, {
+            headers: {
+              "User-Agent": userAgent,
+              "Referer": "https://github.com/xavierzaidane/neurofit-ai",
+            },
+            signal: AbortSignal.timeout(10000), // 10s timeout
+          });
+
+          if (!geocodeResponse.ok) {
+            console.warn(`Nominatim geocoding error for "${queryAttempt}": ${geocodeResponse.statusText}`);
+            continue;
+          }
+
+          const results = await geocodeResponse.json();
+          if (results && results.length > 0) {
+            geocodeResults = results;
+            break; // Found a match!
+          }
+        } catch (err) {
+          console.warn(`Failed geocoding attempt for "${queryAttempt}":`, err);
+        }
+      }
+
       if (!geocodeResults || geocodeResults.length === 0) {
         return NextResponse.json({ error: "location_not_found" });
       }
@@ -119,14 +151,14 @@ export async function GET(req: NextRequest) {
         out center;
       `;
       
-      const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(
-        overpassQuery
-      )}`;
-
-      const response = await fetch(overpassUrl, {
+      const response = await fetch("https://overpass-api.de/api/interpreter", {
+        method: "POST",
         headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
           "User-Agent": userAgent,
+          "Referer": "https://github.com/xavierzaidane/neurofit-ai",
         },
+        body: `data=${encodeURIComponent(overpassQuery)}`,
         signal: AbortSignal.timeout(10000), // 10s timeout
       });
 
