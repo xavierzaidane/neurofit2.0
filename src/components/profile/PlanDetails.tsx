@@ -79,19 +79,43 @@ const PlanDetails = ({ plan, macrosPlan, grocerylistPlan }: PlanDetailsProps) =>
 
   return (
     <>
+      <div className="flex justify-end items-center gap-3 mb-4">
+        <button type="button" className="flex items-center px-4 py-2 text-sm font-mono text-white hover:text-white/70">
+          <Share2 className="size-4 mr-2" />
+          Share
+        </button>
+
+        <PDFDownloadLink
+          document={<PlanPDF plan={plan} macrosPlan={macrosPlan} grocerylistPlan={grocerylistPlan} />}
+          fileName="workout-plan.pdf"
+          onClick={() => setIsGenerating(true)}
+        >
+          {({ loading }) => (
+            <button
+              type="button"
+              className="flex items-center px-4 py-2 text-sm font-mono text-black hover:text-black bg-foreground hover:bg-foreground/50 rounded-lg transition-colors font-semibold"
+              disabled={loading}
+            >
+              <Download className="size-4 mr-2" />
+              {loading ? "Generating..." : "Download Plan"}
+            </button>
+          )}
+        </PDFDownloadLink>
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
         className="relative border border-white/10 bg-white/5 rounded-lg p-6 md:p-8 overflow-hidden"
       >
-      <div className="flex items-center gap-3 mb-6">
-        <h3 className="text-lg font-mono font-bold text-white">
-          PLAN: <span className="text-foreground">{plan.name}</span>
-        </h3>
-      </div>
+        <div className="flex items-center gap-3 mb-6">
+          <h3 className="text-lg font-mono font-bold text-white">
+            PLAN: <span className="text-foreground">{plan.name}</span>
+          </h3>
+        </div>
 
-      <Tabs defaultValue="workout" className="w-full">
+        <Tabs defaultValue="workout" className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-6">
           <TabsTrigger value="workout">
             <DumbbellIcon className=" size-4" />
@@ -258,30 +282,6 @@ const PlanDetails = ({ plan, macrosPlan, grocerylistPlan }: PlanDetailsProps) =>
         </TabsContent>
       </Tabs>
     </motion.div>
-
-    <div className="flex justify-end items-center gap-3 -mt-6">
-      <button type="button" className="flex items-center px-4 py-2 text-sm font-mono text-white hover:text-white/70">
-        <Share2 className="size-4 mr-2" />
-        Share
-      </button>
-
-      <PDFDownloadLink
-        document={<PlanPDF plan={plan} macrosPlan={macrosPlan} grocerylistPlan={grocerylistPlan} />}
-        fileName="workout-plan.pdf"
-        onClick={() => setIsGenerating(true)}
-      >
-        {({ loading }) => (
-          <button
-            type="button"
-            className="flex items-center px-4 py-2 text-sm font-mono text-black hover:text-black bg-foreground hover:bg-foreground/50 rounded-lg transition-colors font-semibold"
-            disabled={loading}
-          >
-            <Download className="size-4 mr-2" />
-            {loading ? "Generating..." : "Download Plan"}
-          </button>
-        )}
-      </PDFDownloadLink>
-    </div>
   </>
   );
 };

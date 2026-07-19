@@ -326,9 +326,9 @@ export default function NeurobotPage() {
 
   return (
     // Permanently dark-themed. No theme toggle, no runtime class switching.
-    <div className="flex h-screen bg-black text-white relative">
+    <div className="flex h-screen bg-background text-white relative">
       {/* Main Chat Area */}
-      <div className="flex-grow flex flex-col h-full bg-neutral-950 relative min-w-0">
+      <div className="flex-grow flex flex-col h-full bg-background relative min-w-0">
 
         {/* ── EMPTY STATE: composer centered with EmptyState ── */}
         {!hasMessages ? (

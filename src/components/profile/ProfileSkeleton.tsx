@@ -3,7 +3,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ProfileSkeleton = () => (
-  <div className="space-y-12">
+  <div className="space-y-10">
     <div className="relative backdrop-blur-md border border-white/10 bg-white/5 rounded-lg p-3 md:p-7 overflow-hidden -mt-10">
       <div className="flex items-start justify-between mb-9">
         <div>

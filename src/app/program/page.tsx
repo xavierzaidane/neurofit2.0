@@ -7,6 +7,7 @@ import { useForm } from "@tanstack/react-form";
 import ProgramFormTabs from "../../components/program/ProgramFormTabs";
 import ProgramFormActions from "../../components/program/ProgramFormActions";
 import ProgramFormSkeleton from "../../components/program/ProgramFormSkeleton";
+import ProgramQAFlow from "../../components/program/ProgramQAFlow";
 import LoadingScreen from "@/app/loading/page";
 import {
 	initialProgramFormData,
@@ -19,6 +20,7 @@ const inputClassName =
 
 const ProgramPage = () => {
 	const [isLoading, setIsLoading] = useState(true);
+	const [mode, setMode] = useState<"qa" | "review">("qa");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [showSubmitLoading, setShowSubmitLoading] = useState(false);
 	const [submitError, setSubmitError] = useState<string | null>(null);
@@ -164,65 +166,72 @@ const ProgramPage = () => {
 					<LoadingScreen />
 				</div>
 			)}
-			<form
-				className={`space-y-8 transition-opacity duration-300 ${
-					isSubmitting ? "opacity-0 pointer-events-none" : "opacity-100"
-				}`}
-				onSubmit={handleSubmit}
-			>
-				<div className="text-left pt-10">
-					<h1 className="text-3xl md:text-3xl font-normal tracking-tight text-white selection:bg-[var(--foreground)]/30 text-white">
-						Fitness Plan Intake
-					</h1>
-					<p className="text-sm font-mono text-white/60 mt-2">
-						Tell us about your goals to generate a personalized plan.
-					</p>
-				</div>
+			
+			{isLoading ? (
+				<ProgramFormSkeleton />
+			) : mode === "qa" ? (
+				<ProgramQAFlow
+					form={form}
+					onComplete={() => setMode("review")}
+					onSkip={() => setMode("review")}
+				/>
+			) : (
+				<form
+					className={`space-y-8 transition-opacity duration-300 ${
+						isSubmitting ? "opacity-0 pointer-events-none" : "opacity-100"
+					}`}
+					onSubmit={handleSubmit}
+				>
+					<div className="text-left pt-10">
+						<h1 className="text-3xl md:text-3xl font-normal tracking-tight text-white selection:bg-[var(--foreground)]/30">
+							Fitness Plan Intake
+						</h1>
+						<p className="text-sm font-mono text-white/60 mt-2">
+							Tell us about your goals to generate a personalized plan.
+						</p>
+					</div>
 
-				{isLoading ? (
-					<ProgramFormSkeleton />
-				) : (
 					<ProgramFormTabs
 						form={form}
 						inputClassName={inputClassName}
 					/>
-				)}
 
-				<form.Subscribe
-					selector={(state) => state.values}
-					children={(values) => (
-						<ProgramFormActions
-							previewRows={[
-								{ label: "Age", value: values.age },
-								{ label: "Height", value: values.height },
-								{ label: "Weight", value: values.weight },
-								{ label: "Country", value: values.countryRegion },
-								{ label: "City", value: values.cityRegion },
-								{ label: "Goal", value: values.fitnessGoal },
-								{ label: "Level", value: values.fitnessLevel },
-								{ label: "Calories", value: values.dailyCalories },
-								{ label: "Allergies", value: values.foodAllergies },
-								{ label: "Workout Days", value: values.workoutDays },
-								{ label: "Workout Time", value: values.workoutTime },
-								{ label: "Sleep", value: values.sleepHours },
-							]}
-							isLoading={isLoading}
-							isSubmitting={isSubmitting}
-							onClear={handleClear}
-							onGenerateSamples={handleGenerateSamples}
-						/>
+					<form.Subscribe
+						selector={(state) => state.values}
+						children={(values) => (
+							<ProgramFormActions
+								previewRows={[
+									{ label: "Age", value: values.age },
+									{ label: "Height", value: values.height },
+									{ label: "Weight", value: values.weight },
+									{ label: "Country", value: values.countryRegion },
+									{ label: "City", value: values.cityRegion },
+									{ label: "Goal", value: values.fitnessGoal },
+									{ label: "Level", value: values.fitnessLevel },
+									{ label: "Calories", value: values.dailyCalories },
+									{ label: "Allergies", value: values.foodAllergies },
+									{ label: "Workout Days", value: values.workoutDays },
+									{ label: "Workout Time", value: values.workoutTime },
+									{ label: "Sleep", value: values.sleepHours },
+								]}
+								isLoading={isLoading}
+								isSubmitting={isSubmitting}
+								onClear={handleClear}
+								onGenerateSamples={handleGenerateSamples}
+							/>
+						)}
+					/>
+
+					{submitError && (
+						<p className="text-sm font-mono text-red-300">{submitError}</p>
 					)}
-				/>
-
-				{submitError && (
-					<p className="text-sm font-mono text-red-300">{submitError}</p>
-				)}
-				{submitSuccess && (
-					<p className="text-sm font-mono text-emerald-300">
-						Program created. Redirecting to your profile...
-					</p>
-				)}
-			</form>
+					{submitSuccess && (
+						<p className="text-sm font-mono text-emerald-300">
+							Program created. Redirecting to your profile...
+						</p>
+					)}
+				</form>
+			)}
 		</section>
 	);
 };

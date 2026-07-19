@@ -11,7 +11,7 @@ const NoFitnessPlan = () => {
       className="relative backdrop-blur-md border border-white/10 bg-white/5 rounded-3xl p-12 md:p-16 text-center overflow-hidden group hover:bg-white/8 transition-all duration-500"
     >
 
-      <h2 className="text-3xl md:text-5xl font-mono mb-6 font-display tracking-tighter text-white">
+      <h2 className="text-3xl md:text-5xl font-normal mb-6 font-display tracking-tighter text-white">
         <span className="text-foreground">No</span> Fitness Plans Yet
       </h2>
       <p className="text-white/60 mb-10 max-w-md mx-auto text-lg leading-relaxed">
