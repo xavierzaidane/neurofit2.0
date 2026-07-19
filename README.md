@@ -1,6 +1,6 @@
 # NeuroFit AI
 
-An AI-powered fitness platform built with Next.js that generates personalized workout programs, diet plans, macro breakdowns, and grocery lists — all from a single intake form. Powered by **Groq** (Qwen3-32B), authenticated with **Clerk**, and backed by **Convex**.
+An AI-powered fitness platform built with Next.js that generates personalized workout programs, diet plans, macro breakdowns, and grocery lists — all from a single intake form. Powered by **Groq** (Qwen3-32B), **Google AI Studio** (Gemini), authenticated with **Clerk**, and backed by **Convex**.
 
 <p align="center">
   <img src="/public/neurofit2.0.png" alt="Project Image" width="100%">
@@ -11,7 +11,8 @@ An AI-powered fitness platform built with Next.js that generates personalized wo
 
 - **AI Program Generation** — Personalized workout schedules, diet plans, macros, and grocery lists generated via Groq's Qwen3-32B model
 - **Multi-step Intake Form** — Structured form flow collecting fitness goals, body metrics, dietary preferences, equipment, and lifestyle data
-- **NeuroBot** — AI chatbot assistant for fitness-related questions
+- **Neurobot Virtual Coach** — AI conversational assistant powered by Google AI Studio (Gemini) featuring customizable coaching personalities, markdown streaming, session management, and reasoning display
+- **Slash Commands** — Command shortcuts including `/findgym` for geocoding and discovering local gyms, `/templates` for fitness prompt templates, `/history` for browsing past sessions, and `/new` to reset
 - **Profile Dashboard** — View and manage generated plans with tabbed navigation (workout, diet, macros, grocery list)
 - **PDF Export** — Download your fitness plans as formatted PDF documents
 - **Gym Finder** — Discover nearby gyms using MapLibre GL maps
@@ -50,11 +51,14 @@ An AI-powered fitness platform built with Next.js that generates personalized wo
 - **HTTP API:** Convex HTTP actions
 - **Webhooks:** Svix (Clerk webhook verification)
 
-### AI
+### AI & Chat Assistants
 
-- **AI Provider:** [Groq](https://groq.com) (cloud inference)
-- **Model:** `qwen/qwen3-32b`
-- **Features:** JSON-mode output, automatic retry with stricter prompts, response validation & sanitization
+- **Core AI Provider:** [Groq](https://groq.com) (cloud inference)
+- **Core AI Model:** `qwen/qwen3-32b`
+- **Intake Features:** JSON-mode output, automatic retry with stricter prompts, response validation & sanitization
+- **Neurobot Provider:** [Google AI Studio](https://aistudio.google.com) (Gemini API via OpenAI-compatible endpoint)
+- **Neurobot Models:** Gemini 3.5 Flash, Gemini 3.1 Flash Lite, Gemini 3.1 Pro (Preview), Gemini 2.5 Flash
+- **Neurobot Features:** Custom fetch timeout (20s) to prevent socket hangs, real-time reasoning extraction (`<think>` blocks parsed into dedicated UI thought containers), streaming SSE responses, 7 customizable personas
 
 ### Maps & Location
 
@@ -81,6 +85,7 @@ An AI-powered fitness platform built with Next.js that generates personalized wo
 - [Clerk](https://clerk.com) account & API keys
 - [Convex](https://convex.dev) project & deployment
 - [Groq](https://console.groq.com) API key
+- [Google AI Studio](https://aistudio.google.com) API key
 
 ---
 
@@ -118,6 +123,10 @@ NEXT_PUBLIC_CONVEX_HTTP_URL=https://your-deployment.convex.site
 # Groq AI
 GROQ_API_KEY=your_groq_api_key
 GROQ_MODEL=qwen/qwen3-32b
+
+# Google AI Studio (Gemini)
+GOOGLE_AI_STUDIO_API_KEY=your_google_ai_studio_api_key
+GOOGLE_AI_STUDIO_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
 ```
 
 > Replace all placeholder values with your actual credentials. Groq environment variables are set in the [Convex dashboard](https://dashboard.convex.dev) as server-side env vars.
@@ -207,6 +216,8 @@ convex/
 | `NEXT_PUBLIC_CONVEX_HTTP_URL` | Convex HTTP actions endpoint |
 | `GROQ_API_KEY` | Groq API key (set in Convex dashboard) |
 | `GROQ_MODEL` | Groq model identifier (default: `qwen/qwen3-32b`) |
+| `GOOGLE_AI_STUDIO_API_KEY` | Google AI Studio (Gemini) API key |
+| `GOOGLE_AI_STUDIO_BASE_URL` | Base URL for Google AI Studio's OpenAI-compatible endpoint |
 | `CORS_ORIGIN` | Allowed CORS origin for HTTP actions |
 
 ---
