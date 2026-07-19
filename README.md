@@ -1,6 +1,6 @@
 # NeuroFit AI
 
-An AI-powered fitness platform built with Next.js that generates personalized workout programs, diet plans, macro breakdowns, and grocery lists — all from a single intake form. Powered by **Groq** (Qwen3-32B), **Google AI Studio** (Gemini), authenticated with **Clerk**, and backed by **Convex**.
+An AI-powered fitness platform built with Next.js that generates personalized workout programs, diet plans, macro breakdowns, and grocery lists — all from a single intake form. Powered by **Google AI Studio** (Gemini), authenticated with **Clerk**, and backed by **Convex**.
 
 <p align="center">
   <img src="/public/neurofit2.0.png" alt="Project Image" width="100%">
@@ -9,7 +9,7 @@ An AI-powered fitness platform built with Next.js that generates personalized wo
 
 ## Features
 
-- **AI Program Generation** — Personalized workout schedules, diet plans, macros, and grocery lists generated via Groq's Qwen3-32B model
+- **AI Program Generation** — Personalized workout schedules, diet plans, macros, and grocery lists generated via Google AI Studio's Gemini 3.5 Flash model with native JSON schema formatting
 - **Multi-step Intake Form** — Structured form flow collecting fitness goals, body metrics, dietary preferences, equipment, and lifestyle data
 - **Neurobot Chatbot** — AI conversational assistant powered by Google AI Studio (Gemini) featuring customizable coaching personalities, markdown streaming, session management, and reasoning display
 - **Slash Commands** — Command shortcuts including `/findgym` for geocoding and discovering local gyms, `/templates` for fitness prompt templates, `/history` for browsing past sessions, and `/new` to reset
@@ -51,11 +51,11 @@ An AI-powered fitness platform built with Next.js that generates personalized wo
 
 ### AI & Chat Assistants
 
-- **Core AI Provider:** [Groq](https://groq.com) (cloud inference)
-- **Core AI Model:** `qwen/qwen3-32b`
-- **Intake Features:** JSON-mode output, automatic retry with stricter prompts, response validation & sanitization
+- **Program Generation Provider:** [Google AI Studio](https://aistudio.google.com) (Gemini API via OpenAI-compatible endpoint)
+- **Program Generation Model:** `gemini-3.5-flash`
+- **Intake Features:** Native structured output (`response_format` JSON schema) for 100% reliable structure compilation, optimized lightweight prompts, automatic retry, response validation & sanitization
 - **Neurobot Provider:** [Google AI Studio](https://aistudio.google.com) (Gemini API via OpenAI-compatible endpoint)
-- **Neurobot Models:** Gemini 3.5 Flash, Gemini 3.1 Flash Lite, Gemini 3.1 Pro (Preview), Gemini 2.5 Flash
+- **Neurobot Models:** Gemini 3.5 Flash, Gemini 3.1 Flash Lite, Gemini 3.1 Pro (Preview)
 - **Neurobot Features:** Custom fetch timeout (20s) to prevent socket hangs, real-time reasoning extraction (`<think>` blocks parsed into dedicated UI thought containers), streaming SSE responses, 7 customizable personas
 
 ### Maps & Location
@@ -82,8 +82,7 @@ An AI-powered fitness platform built with Next.js that generates personalized wo
 - npm or yarn
 - [Clerk](https://clerk.com) account & API keys
 - [Convex](https://convex.dev) project & deployment
-- [Groq](https://console.groq.com) API key
-- [Google AI Studio](https://aistudio.google.com) API key
+- [Google AI Studio](https://aistudio.google.com) API keys (one for Program Generation, one for Neurobot Chat)
 
 ---
 
@@ -118,13 +117,13 @@ CONVEX_DEPLOYMENT=dev:your-deployment-name
 NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
 NEXT_PUBLIC_CONVEX_HTTP_URL=https://your-deployment.convex.site
 
-# Groq AI
-GROQ_API_KEY=your_groq_api_key
-GROQ_MODEL=qwen/qwen3-32b
+# Google AI Studio (Gemini) - Program Generation (set in Convex dashboard)
+GOOGLE_AI_STUDIO_API_KEY_PROGRAM=your_program_gemini_api_key
+GOOGLE_AI_STUDIO_BASE_URL_PROGRAM=https://generativelanguage.googleapis.com/v1beta/openai
 
-# Google AI Studio (Gemini)
-GOOGLE_AI_STUDIO_API_KEY=your_google_ai_studio_api_key
-GOOGLE_AI_STUDIO_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+# Google AI Studio (Gemini) - Neurobot Chat (set in project env vars)
+GOOGLE_AI_STUDIO_API_KEY_NEUROBOT=your_neurobot_gemini_api_key
+GOOGLE_AI_STUDIO_BASE_URL_NEUROBOT=https://generativelanguage.googleapis.com/v1beta/openai
 ```
 
 > Replace all placeholder values with your actual credentials. Groq environment variables are set in the [Convex dashboard](https://dashboard.convex.dev) as server-side env vars.
@@ -212,10 +211,10 @@ convex/
 | `CONVEX_DEPLOYMENT` | Convex deployment reference |
 | `NEXT_PUBLIC_CONVEX_URL` | Convex client endpoint |
 | `NEXT_PUBLIC_CONVEX_HTTP_URL` | Convex HTTP actions endpoint |
-| `GROQ_API_KEY` | Groq API key (set in Convex dashboard) |
-| `GROQ_MODEL` | Groq model identifier (default: `qwen/qwen3-32b`) |
-| `GOOGLE_AI_STUDIO_API_KEY` | Google AI Studio (Gemini) API key |
-| `GOOGLE_AI_STUDIO_BASE_URL` | Base URL for Google AI Studio's OpenAI-compatible endpoint |
+| `GOOGLE_AI_STUDIO_API_KEY_PROGRAM` | Gemini API key for program generation (set in Convex dashboard) |
+| `GOOGLE_AI_STUDIO_BASE_URL_PROGRAM` | Base URL for program generation Gemini OpenAI-compatible endpoint |
+| `GOOGLE_AI_STUDIO_API_KEY_NEUROBOT` | Gemini API key for Neurobot chat |
+| `GOOGLE_AI_STUDIO_BASE_URL_NEUROBOT` | Base URL for Neurobot chat Gemini OpenAI-compatible endpoint |
 | `CORS_ORIGIN` | Allowed CORS origin for HTTP actions |
 
 ---
