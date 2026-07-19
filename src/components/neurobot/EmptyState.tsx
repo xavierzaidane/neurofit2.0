@@ -13,7 +13,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   onOpenAllTemplates,
 }) => {
   // Select 3 featured templates to show as quick-start chips
-  const featuredIds = ["rewrite-msg", "translate-text", "draft-email"];
+  const featuredIds = ["workout-plan", "meal-planner", "macro-calc"];
   const featuredTemplates = templatesConfig.filter((t) => featuredIds.includes(t.id));
 
   return (
@@ -34,7 +34,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
       {/* Subtext */}
       <p className="text-md text-white/50 text-center mb-8 max-w-md leading-relaxed selection:bg-[var(--foreground)]/20">
-        I can help you compose, refine, and manage your messages. Try one of these:
+        I can help you with workouts, nutrition, recovery, and fitness goals. Try one of these:
       </p>
 
       {/* Quick start template chips - Horizontal single row */}

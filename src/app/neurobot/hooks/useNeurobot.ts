@@ -273,7 +273,7 @@ Here is my analysis of your query:
 ### Key Points:
 1. **Structured Layout**: Standardized markdown rendering with clear headings and bullet lists.
 2. **Context-Aware Style**: My response tone is modified dynamically to match the personality you selected in the composer bar.
-3. **Model Specifics**: Serving completions using the Nvidia NIM microservice protocol (\`${model.nvidiaModelId}\`).
+3. **Model Specifics**: Serving completions using Google AI Studio (Gemini) endpoint (\`${model.modelId}\`).
 
 Please let me know if you'd like to test specific prompts, slash commands like \`/templates\`, or switch to a different personality!`;
     }

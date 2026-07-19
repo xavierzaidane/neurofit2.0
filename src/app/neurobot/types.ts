@@ -40,7 +40,7 @@ export interface ChatSession {
 export interface ModelConfig {
   id: string;
   displayName: string;
-  nvidiaModelId: string;
+  modelId: string;
   contextWindow: string;
   maxTokens: number;
   supportsReasoning: boolean;
@@ -58,7 +58,7 @@ export interface PersonalityConfig {
 
 export interface TemplateConfig {
   id: string;
-  category: "Writing" | "Professional" | "Social" | "Utility";
+  category: "Workouts" | "Nutrition" | "Recovery & Care" | "Coaching";
   title: string;
   icon: string;
   promptBody: string;

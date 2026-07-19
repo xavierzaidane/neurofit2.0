@@ -1,147 +1,123 @@
 import { TemplateConfig } from "../types";
 
 export const templatesConfig: TemplateConfig[] = [
-  // Writing
+  // Workouts
   {
-    id: "rewrite-msg",
-    category: "Writing",
-    title: "Rewrite my message",
-    icon: "Pencil",
-    promptBody: "Please rewrite the following message to make it more [Tone (e.g. professional, friendly, persuasive, concise)]:\n\n\"[Insert your draft message here]\"",
-    placeholders: ["Tone", "Insert your draft message here"]
+    id: "workout-plan",
+    category: "Workouts",
+    title: "Custom workout plan",
+    icon: "Dumbbell",
+    promptBody: "Create a [Duration (e.g. 4-week, 1-day)] custom workout plan for a [Fitness Level (e.g. beginner, intermediate, advanced)] individual focusing on [Focus Area (e.g. strength, hypertrophy, fat loss)] using [Equipment (e.g. full gym, dumbbells, bodyweight)].",
+    placeholders: ["Duration", "Fitness Level", "Focus Area", "Equipment"]
   },
   {
-    id: "translate-text",
-    category: "Writing",
-    title: "Translate text",
-    icon: "Languages",
-    promptBody: "Translate the following text into [Target Language]:\n\n\"[Text to translate]\"",
-    placeholders: ["Target Language", "Text to translate"]
-  },
-  {
-    id: "summarize-text",
-    category: "Writing",
-    title: "Summarize text",
-    icon: "FileText",
-    promptBody: "Summarize this text in [Format (e.g. 3 bullet points, a single paragraph, key takeaways)]:\n\n\"[Paste text here]\"",
-    placeholders: ["Format", "Paste text here"]
-  },
-  {
-    id: "fix-grammar",
-    category: "Writing",
-    title: "Fix grammar & tone",
-    icon: "SpellCheck",
-    promptBody: "Correct all spelling and grammar mistakes in the text below, and adjust the tone to sound [Desired Tone]:\n\n\"[Paste text here]\"",
-    placeholders: ["Desired Tone", "Paste text here"]
-  },
-  {
-    id: "continue-writing",
-    category: "Writing",
-    title: "Continue writing",
+    id: "exercise-form",
+    category: "Workouts",
+    title: "Exercise form cues",
     icon: "Activity",
-    promptBody: "Continue writing the next paragraphs for this draft, matching the style, vocabulary, and tone:\n\n\"[Your draft writing]\"",
-    placeholders: ["Your draft writing"]
+    promptBody: "Provide step-by-step form cues, common mistakes to avoid, and safe execution tips for the [Exercise Name (e.g. barbell squat, deadlift)].",
+    placeholders: ["Exercise Name"]
+  },
+  {
+    id: "scale-difficulty",
+    category: "Workouts",
+    title: "Scale exercise difficulty",
+    icon: "TrendingUp",
+    promptBody: "I am currently doing [Exercise Name] but find it too [Difficulty (e.g. hard, easy)]. Provide 3 progressions or regressions that I can use instead to match my strength.",
+    placeholders: ["Exercise Name", "Difficulty"]
+  },
+  {
+    id: "warmup-routine",
+    category: "Workouts",
+    title: "Dynamic warmup guide",
+    icon: "Flame",
+    promptBody: "Design a dynamic warmup routine targeting [Focus Muscle Groups (e.g. shoulders/chest, legs/hips)] to prepare for a [Workout Type (e.g. heavy lifting, running)] session.",
+    placeholders: ["Focus Muscle Groups", "Workout Type"]
   },
 
-  // Professional
+  // Nutrition
   {
-    id: "draft-email",
-    category: "Professional",
-    title: "Draft an email",
-    icon: "Mail",
-    promptBody: "Write a professional email to [Recipient (e.g. client, boss, team)] regarding [Subject/Purpose]. Make sure to cover the following key points:\n- [Key point 1]\n- [Key point 2]\n\nInclude a polite greeting and sign-off.",
-    placeholders: ["Recipient", "Subject/Purpose", "Key point 1", "Key point 2"]
+    id: "meal-planner",
+    category: "Nutrition",
+    title: "Custom meal planner",
+    icon: "Utensils",
+    promptBody: "Build a [Meal Count (e.g. 3-meal, 4-meal)] daily meal plan aiming for [Calorie/Macro Target (e.g. 2500 kcal, high protein)] that complies with [Dietary Restrictions (e.g. vegan, gluten-free, none)].",
+    placeholders: ["Meal Count", "Calorie/Macro Target", "Dietary Restrictions"]
   },
   {
-    id: "meeting-agenda",
-    category: "Professional",
-    title: "Write a meeting agenda",
-    icon: "Calendar",
-    promptBody: "Create a detailed meeting agenda for a [Duration (e.g. 30-minute, 1-hour)] meeting on the topic of '[Meeting Topic]'. Include time allocations for each section and objectives.",
-    placeholders: ["Duration", "Meeting Topic"]
+    id: "macro-calc",
+    category: "Nutrition",
+    title: "Calculate macros",
+    icon: "Scale",
+    promptBody: "Calculate my recommended daily calorie intake and macronutrient split (Protein, Carbs, Fats) for [Goal (e.g. muscle gain, fat loss)] based on my weight: [Weight (e.g. 80kg)], height: [Height (e.g. 180cm)], age: [Age], and activity level: [Activity Level (e.g. sedentary, moderately active)].",
+    placeholders: ["Goal", "Weight", "Height", "Age", "Activity Level"]
   },
   {
-    id: "project-update",
-    category: "Professional",
-    title: "Create a project update",
-    icon: "ClipboardList",
-    promptBody: "Draft a concise project status update for '[Project Name]'. Outline what was accomplished this week, current blockers, and key goals for next week:\n\nProgress:\nBlockers:\nNext steps:",
-    placeholders: ["Project Name"]
+    id: "grocery-list",
+    category: "Nutrition",
+    title: "Grocery shopping list",
+    icon: "ShoppingBag",
+    promptBody: "Generate a healthy grocery shopping list structured by supermarket aisles for a [Budget/Preference (e.g. budget-friendly, high-protein)] diet supporting [Number of People] people for one week.",
+    placeholders: ["Budget/Preference", "Number of People"]
   },
   {
-    id: "job-desc",
-    category: "Professional",
-    title: "Write a job description",
-    icon: "UserPlus",
-    promptBody: "Write an appealing job description for the role of '[Job Title]'. Include the company overview, core responsibilities, key requirements/qualifications, and benefits.",
-    placeholders: ["Job Title"]
-  },
-
-  // Social
-  {
-    id: "write-caption",
-    category: "Social",
-    title: "Write a caption",
-    icon: "Instagram",
-    promptBody: "Create 3 variations of engaging captions (with hashtags) for a social media post about [Topic/Event] aimed at [Target Audience]. Tone should be [Tone].",
-    placeholders: ["Topic/Event", "Target Audience", "Tone"]
-  },
-  {
-    id: "birthday-msg",
-    category: "Social",
-    title: "Draft a birthday message",
-    icon: "Gift",
-    promptBody: "Draft a warm, [Tone (e.g. funny, heartfelt, short)] birthday message for my [Relationship (e.g. friend, colleague, sibling)] named [Name].",
-    placeholders: ["Tone", "Relationship", "Name"]
-  },
-  {
-    id: "reply-comment",
-    category: "Social",
-    title: "Reply to a comment",
-    icon: "MessageSquare",
-    promptBody: "Draft a polite and engaging response to this comment on my post about [Post Topic]:\n\nComment: \"[Paste comment here]\"",
-    placeholders: ["Post Topic", "Paste comment here"]
-  },
-  {
-    id: "announcement-post",
-    category: "Social",
-    title: "Write an announcement",
-    icon: "Megaphone",
-    promptBody: "Write a community announcement message about [What is being announced]. Explain why it matters and what actions members should take next.",
-    placeholders: ["What is being announced"]
-  },
-
-  // Utility
-  {
-    id: "explain-code",
-    category: "Utility",
-    title: "Explain this code",
-    icon: "Code",
-    promptBody: "Explain how this code works in plain English, highlighting any potential bugs or performance bottlenecks:\n\n```[Language]\n[Insert your code here]\n```",
-    placeholders: ["Language", "Insert your code here"]
-  },
-  {
-    id: "convert-format",
-    category: "Utility",
-    title: "Convert data format",
+    id: "recipe-swap",
+    category: "Nutrition",
+    title: "Healthy ingredient swap",
     icon: "RefreshCw",
-    promptBody: "Convert the following data from [Source Format (e.g. CSV, JSON, XML)] to [Target Format]:\n\n```\n[Insert source data here]\n```",
-    placeholders: ["Source Format", "Target Format", "Insert source data here"]
+    promptBody: "I want to cook [Recipe Name (e.g. classic lasagna, chocolate cake)]. Please suggest healthier ingredient substitutions to lower the [Focus (e.g. calories, simple carbs, saturated fat)] while preserving taste and texture.",
+    placeholders: ["Recipe Name", "Focus"]
+  },
+
+  // Recovery & Care
+  {
+    id: "mobility-routine",
+    category: "Recovery & Care",
+    title: "Stretching & mobility routine",
+    icon: "Heart",
+    promptBody: "Create a [Duration (e.g. 15-minute)] stretching and mobility sequence designed to relieve tightness in the [Target Area (e.g. lower back, hips, shoulders)].",
+    placeholders: ["Duration", "Target Area"]
   },
   {
-    id: "brainstorm-ideas",
-    category: "Utility",
-    title: "Brainstorm ideas",
-    icon: "Lightbulb",
-    promptBody: "Generate 10 creative ideas or approaches for [Objective/Topic] considering [Constraints/Target].",
-    placeholders: ["Objective/Topic", "Constraints/Target"]
+    id: "injury-recovery",
+    category: "Recovery & Care",
+    title: "Active recovery day plan",
+    icon: "ShieldAlert",
+    promptBody: "Outline an active recovery day routine for an athlete recovering from a heavy week of [Activity Type (e.g. powerlifting, marathon training)], ensuring low impact on joints.",
+    placeholders: ["Activity Type"]
   },
   {
-    id: "make-checklist",
-    category: "Utility",
-    title: "Make a checklist",
-    icon: "CheckSquare",
-    promptBody: "Create a comprehensive, step-by-step checklist for [Task/Goal] ordered by phase or priority.",
-    placeholders: ["Task/Goal"]
+    id: "sleep-prep",
+    category: "Recovery & Care",
+    title: "Sleep hygiene checklist",
+    icon: "Moon",
+    promptBody: "Design a night-time wind-down routine and environment checklist to optimize deep sleep and physical recovery for someone experiencing [Issue (e.g. restlessness, high stress)].",
+    placeholders: ["Issue"]
+  },
+
+  // Coaching
+  {
+    id: "client-checkin",
+    category: "Coaching",
+    title: "Client check-in script",
+    icon: "MessageSquare",
+    promptBody: "Draft a weekly coaching check-in message for a client who is working towards [Client Goal (e.g. weight loss, body recomposition)] but has recently faced [Challenge (e.g. low energy, busy schedule)]. Make the tone encouraging, supportive, and action-oriented.",
+    placeholders: ["Client Goal", "Challenge"]
+  },
+  {
+    id: "goal-setting",
+    category: "Coaching",
+    title: "Set SMART fitness goals",
+    icon: "Target",
+    promptBody: "Help me structure a SMART (Specific, Measurable, Achievable, Relevant, Time-bound) goal framework for my objective: '[My Objective]' over a timeline of [Timeframe (e.g. 3 months)].",
+    placeholders: ["My Objective", "Timeframe"]
+  },
+  {
+    id: "fitness-plateau",
+    category: "Coaching",
+    title: "Break a workout plateau",
+    icon: "Zap",
+    promptBody: "I have hit a plateau in my [Exercise/Metric (e.g. bench press strength, weight loss progress)] which has stayed flat for [Time (e.g. 4 weeks)]. Review my current approach: '[Current Approach]' and recommend 3 strategic adjustments to break through.",
+    placeholders: ["Exercise/Metric", "Time", "Current Approach"]
   }
 ];

@@ -3,29 +3,27 @@ import { modelsConfig } from "@/app/neurobot/config/models.config";
 import { personalitiesConfig } from "@/app/neurobot/config/personalities.config";
 
 export async function POST(req: NextRequest) {
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => abortController.abort(), 20000); // 20-second timeout
+
   try {
     const { model: modelId, personalityId, messages, attachments } = await req.json();
 
     const model = modelsConfig.find(m => m.id === modelId) || modelsConfig[0];
     const personality = personalitiesConfig.find(p => p.id === personalityId) || personalitiesConfig[0];
 
-    const apiKey = process.env.NVIDIA_API_KEY;
-    const apiBaseUrl = process.env.NVIDIA_API_BASE_URL || "https://integrate.api.nvidia.com/v1";
+    const apiKey = process.env.GOOGLE_AI_STUDIO_API_KEY;
+    const apiBaseUrl = process.env.GOOGLE_AI_STUDIO_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai";
 
     if (!apiKey) {
+      clearTimeout(timeoutId);
       return new Response(
-        JSON.stringify({ error: "NVIDIA_API_KEY is not configured on the server. Please check your environment variables." }),
+        JSON.stringify({ error: "GOOGLE_AI_STUDIO_API_KEY is not configured on the server. Please check your environment variables." }),
         {
           status: 500,
           headers: { "Content-Type": "application/json" }
         }
       );
-    }
-
-    // Map model ID to nvidiaModelId
-    let nvidiaModelId = model.nvidiaModelId;
-    if (nvidiaModelId === "minimax/minimax-m2.7-chat") {
-      nvidiaModelId = "minimaxai/minimax-m2.7";
     }
 
     // Format system prompt as first message
@@ -69,7 +67,7 @@ export async function POST(req: NextRequest) {
       formattedMessages[lastMessageIndex] = lastMessage;
     }
 
-    // Call NVIDIA API
+    // Call Google AI Studio OpenAI-compatible API
     const response = await fetch(`${apiBaseUrl}/chat/completions`, {
       method: "POST",
       headers: {
@@ -77,17 +75,33 @@ export async function POST(req: NextRequest) {
         "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: nvidiaModelId,
+        model: model.modelId,
         messages: formattedMessages,
         stream: true,
-        max_tokens: model.maxTokens || 4096
-      })
+        max_tokens: model.maxTokens || 8192
+      }),
+      signal: abortController.signal
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errText = await response.text();
+      let errorMessage = errText;
+      try {
+        const parsedErr = JSON.parse(errText);
+        errorMessage = parsedErr.error?.message || parsedErr.message || errText;
+      } catch (_) {}
+
+      let friendlyMessage = `Google AI Studio API error: ${errorMessage}`;
+      if (response.status === 429) {
+        friendlyMessage = "Neurobot rate limit exceeded. Please wait a moment before trying again.";
+      } else if (response.status === 401) {
+        friendlyMessage = "Neurobot authentication error. Please check server environment variables.";
+      }
+
       return new Response(
-        JSON.stringify({ error: `NVIDIA API error: ${response.status} - ${errText}` }),
+        JSON.stringify({ error: friendlyMessage }),
         {
           status: response.status,
           headers: { "Content-Type": "application/json" }
@@ -107,6 +121,9 @@ export async function POST(req: NextRequest) {
         }
 
         let buffer = "";
+        let inThinkBlock = false;
+        let pendingBuffer = "";
+
         try {
           while (true) {
             const { done, value } = await reader.read();
@@ -123,6 +140,17 @@ export async function POST(req: NextRequest) {
               if (trimmed.startsWith("data:")) {
                 const dataStr = trimmed.slice(5).trim();
                 if (dataStr === "[DONE]") {
+                  // Flush any remaining tag buffers
+                  if (pendingBuffer) {
+                    controller.enqueue(
+                      encoder.encode(
+                        inThinkBlock
+                          ? `event: reasoning_delta\ndata: ${JSON.stringify({ text: pendingBuffer })}\n\n`
+                          : `event: content_delta\ndata: ${JSON.stringify({ text: pendingBuffer })}\n\n`
+                      )
+                    );
+                    pendingBuffer = "";
+                  }
                   controller.enqueue(encoder.encode("event: done\ndata: [DONE]\n\n"));
                   continue;
                 }
@@ -132,19 +160,111 @@ export async function POST(req: NextRequest) {
                   const delta = parsed.choices?.[0]?.delta;
                   if (!delta) continue;
 
+                  // 1. If provider explicitly sends reasoning_content, use it directly
                   if (delta.reasoning_content) {
                     controller.enqueue(
                       encoder.encode(`event: reasoning_delta\ndata: ${JSON.stringify({ text: delta.reasoning_content })}\n\n`)
                     );
                   }
-                  
+
+                  // 2. Stream content_delta, detecting and parsing inline <think>...</think> tags if present
                   if (delta.content) {
-                    controller.enqueue(
-                      encoder.encode(`event: content_delta\ndata: ${JSON.stringify({ text: delta.content })}\n\n`)
-                    );
+                    let text = pendingBuffer + delta.content;
+                    pendingBuffer = "";
+
+                    while (text.length > 0) {
+                      if (!inThinkBlock) {
+                        const index = text.indexOf("<think>");
+                        if (index !== -1) {
+                          if (index > 0) {
+                            controller.enqueue(
+                              encoder.encode(`event: content_delta\ndata: ${JSON.stringify({ text: text.slice(0, index) })}\n\n`)
+                            );
+                          }
+                          inThinkBlock = true;
+                          text = text.slice(index + "<think>".length);
+                          continue;
+                        }
+
+                        // Check for partial match of "<think>" at end of text
+                        let partialFound = false;
+                        const openBracketIndex = text.lastIndexOf("<");
+                        if (openBracketIndex !== -1 && openBracketIndex >= text.length - "<think>".length) {
+                          const suffix = text.slice(openBracketIndex);
+                          if ("<think>".startsWith(suffix)) {
+                            if (openBracketIndex > 0) {
+                              controller.enqueue(
+                                encoder.encode(`event: content_delta\ndata: ${JSON.stringify({ text: text.slice(0, openBracketIndex) })}\n\n`)
+                              );
+                            }
+                            pendingBuffer = suffix;
+                            partialFound = true;
+                            break;
+                          }
+                        }
+
+                        if (!partialFound) {
+                          controller.enqueue(
+                            encoder.encode(`event: content_delta\ndata: ${JSON.stringify({ text })}\n\n`)
+                          );
+                          break;
+                        }
+                      } else {
+                        const index = text.indexOf("</think>");
+                        if (index !== -1) {
+                          if (index > 0) {
+                            controller.enqueue(
+                              encoder.encode(`event: reasoning_delta\ndata: ${JSON.stringify({ text: text.slice(0, index) })}\n\n`)
+                            );
+                          }
+                          inThinkBlock = false;
+                          text = text.slice(index + "</think>".length);
+                          continue;
+                        }
+
+                        // Check for partial match of "</think>" at end of text
+                        let partialFound = false;
+                        const openBracketIndex = text.lastIndexOf("</");
+                        if (openBracketIndex !== -1 && openBracketIndex >= text.length - "</think>".length) {
+                          const suffix = text.slice(openBracketIndex);
+                          if ("</think>".startsWith(suffix)) {
+                            if (openBracketIndex > 0) {
+                              controller.enqueue(
+                                encoder.encode(`event: reasoning_delta\ndata: ${JSON.stringify({ text: text.slice(0, openBracketIndex) })}\n\n`)
+                              );
+                            }
+                            pendingBuffer = suffix;
+                            partialFound = true;
+                            break;
+                          }
+                        }
+
+                        const singleBracketIndex = text.lastIndexOf("<");
+                        if (!partialFound && singleBracketIndex !== -1 && singleBracketIndex === text.length - 1) {
+                          const suffix = text.slice(singleBracketIndex);
+                          if ("</think>".startsWith(suffix)) {
+                            if (singleBracketIndex > 0) {
+                              controller.enqueue(
+                                encoder.encode(`event: reasoning_delta\ndata: ${JSON.stringify({ text: text.slice(0, singleBracketIndex) })}\n\n`)
+                              );
+                            }
+                            pendingBuffer = suffix;
+                            partialFound = true;
+                            break;
+                          }
+                        }
+
+                        if (!partialFound) {
+                          controller.enqueue(
+                            encoder.encode(`event: reasoning_delta\ndata: ${JSON.stringify({ text })}\n\n`)
+                          );
+                          break;
+                        }
+                      }
+                    }
                   }
                 } catch (err) {
-                  // Ignore JSON parse errors for incomplete lines or safety blocks
+                  // Ignore JSON parse errors for incomplete lines
                 }
               }
             }
@@ -155,6 +275,15 @@ export async function POST(req: NextRequest) {
             encoder.encode(`event: error\ndata: ${JSON.stringify({ message: "Streaming connection lost" })}\n\n`)
           );
         } finally {
+          if (pendingBuffer) {
+            controller.enqueue(
+              encoder.encode(
+                inThinkBlock
+                  ? `event: reasoning_delta\ndata: ${JSON.stringify({ text: pendingBuffer })}\n\n`
+                  : `event: content_delta\ndata: ${JSON.stringify({ text: pendingBuffer })}\n\n`
+              )
+            );
+          }
           controller.close();
           reader.releaseLock();
         }
@@ -170,7 +299,17 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error: any) {
+    clearTimeout(timeoutId);
     console.error("Error in neurobot chat endpoint:", error);
+    if (error.name === "AbortError") {
+      return new Response(
+        JSON.stringify({ error: "The request to Google AI Studio timed out after 20 seconds. Please try again." }),
+        {
+          status: 504,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
     return new Response(
       JSON.stringify({ error: error.message || "Internal server error" }),
       {

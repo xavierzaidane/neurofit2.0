@@ -2,53 +2,43 @@ import { ModelConfig } from "../types";
 
 export const modelsConfig: ModelConfig[] = [
   {
-    id: "gpt-oss-120b",
-    displayName: "GPT OSS 120B",
-    nvidiaModelId: "openai/gpt-oss-120b",
-    contextWindow: "128K",
-    maxTokens: 4096,
-    supportsReasoning: false,
-    supportsVision: true,
-    description: "General-purpose high-capacity open-source model optimized for complex instructions and multi-turn chat."
-  },
-  {
-    id: "gemma-4-31b",
-    displayName: "Gemma 4 31B",
-    nvidiaModelId: "google/gemma-4-31b-it",
-    contextWindow: "64K",
-    maxTokens: 4096,
-    supportsReasoning: false,
-    supportsVision: false,
-    description: "Google's ultra-fast instruction-tuned model, exceptional at writing and structural formatting."
-  },
-  {
-    id: "deepseek-v4-flash",
-    displayName: "DeepSeek V4 Flash",
-    nvidiaModelId: "deepseek-ai/deepseek-v4-flash",
-    contextWindow: "128K",
+    id: "gemini-3.5-flash",
+    displayName: "Gemini 3.5 Flash",
+    modelId: "gemini-3.5-flash",
+    contextWindow: "1M",
     maxTokens: 8192,
     supportsReasoning: true,
-    supportsVision: false,
-    description: "Features deep chain-of-thought reasoning to solve logical, mathematical, and coding problems step-by-step."
+    supportsVision: true,
+    description: "Google's latest fast model — excellent balance of speed, high context, and task quality."
   },
   {
-    id: "minimax-m2.7",
-    displayName: "Minimax M2.7",
-    nvidiaModelId: "minimax/minimax-m2.7-chat",
-    contextWindow: "200K",
-    maxTokens: 4096,
+    id: "gemini-3.1-flash-lite",
+    displayName: "Gemini 3.1 Flash Lite",
+    modelId: "gemini-3.1-flash-lite",
+    contextWindow: "1M",
+    maxTokens: 8192,
     supportsReasoning: false,
-    supportsVision: false,
-    description: "Excellent for processing long context, document summarizing, and highly coherent multi-turn chats."
+    supportsVision: true,
+    description: "Ultra-fast and cost-efficient for lightweight tasks and high-frequency conversation."
   },
   {
-    id: "nemotron-120b",
-    displayName: "Nemotron 120B",
-    nvidiaModelId: "nvidia/nemotron-4-340b-instruct", // Mapping to high capacity Nemotron NIM
-    contextWindow: "32K",
-    maxTokens: 4096,
+    id: "gemini-3.1-pro",
+    displayName: "Gemini 3.1 Pro",
+    modelId: "gemini-3.1-pro-preview",
+    contextWindow: "1M",
+    maxTokens: 8192,
     supportsReasoning: true,
     supportsVision: true,
-    description: "NVIDIA's flagship conversational model optimized for role-play, reasoning, and synthetic data generation."
+    description: "Google's flagship reasoning model optimized for deep coding, math, and multi-step complex instructions."
+  },
+  {
+    id: "gemini-2.5-flash",
+    displayName: "Gemini 2.5 Flash",
+    modelId: "gemini-2.5-flash",
+    contextWindow: "1M",
+    maxTokens: 8192,
+    supportsReasoning: true,
+    supportsVision: true,
+    description: "Reliable production model with built-in thinking capability. Retires October 2026."
   }
 ];

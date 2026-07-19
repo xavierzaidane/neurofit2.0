@@ -16,7 +16,7 @@ export const TemplatePickerModal: React.FC<TemplatePickerModalProps> = ({
   onClose,
   onSelect,
 }) => {
-  const categories = ["Writing", "Professional", "Social", "Utility"] as const;
+  const categories = ["Workouts", "Nutrition", "Recovery & Care", "Coaching"] as const;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
@@ -27,7 +27,7 @@ export const TemplatePickerModal: React.FC<TemplatePickerModalProps> = ({
         {/* Header */}
         <div className="relative px-8 pt-8 pb-4 flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-[17px] font-semibold text-white tracking-tight font-mono">
+            <DialogTitle className="text-[17px] font-semibold text-white tracking-tight font-normal">
               All Suggestions
             </DialogTitle>
             <DialogClose asChild>
