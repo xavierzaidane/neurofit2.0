@@ -13,8 +13,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "*",
 };
 
-const groqApiKey = process.env.GROQ_API_KEY;
-const groqModel = process.env.GROQ_MODEL || "qwen/qwen3-32b";
+const geminiApiKey = process.env.GOOGLE_AI_STUDIO_API_KEY_PROGRAM;
+const geminiBaseUrl = process.env.GOOGLE_AI_STUDIO_BASE_URL_PROGRAM || "https://generativelanguage.googleapis.com/v1beta/openai";
+const geminiModel = "gemini-3.5-flash";
 
 const extractJson = (content: string) => {
   const trimmed = content.trim();
@@ -56,29 +57,118 @@ const buildCacheKey = (inputs: {
     .map(normalizeCacheInput)
     .join("|");
 
-const GROQ_TIMEOUT_MS = 30_000;
+const GEMINI_TIMEOUT_MS = 45_000;
 
-const callGroqChat = async (
+// Schema for response formatting to enforce structured JSON output in Gemini
+const fitnessPlanSchema = {
+  type: "object",
+  properties: {
+    workoutPlan: {
+      type: "object",
+      properties: {
+        schedule: { type: "array", items: { type: "string" } },
+        exercises: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              day: { type: "string" },
+              routines: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    sets: { type: "integer" },
+                    reps: { type: "integer" }
+                  },
+                  required: ["name", "sets", "reps"]
+                }
+              }
+            },
+            required: ["day", "routines"]
+          }
+        }
+      },
+      required: ["schedule", "exercises"]
+    },
+    dietPlan: {
+      type: "object",
+      properties: {
+        dailyCalories: { type: "integer" },
+        meals: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              foods: { type: "array", items: { type: "string" } }
+            },
+            required: ["name", "foods"]
+          }
+        }
+      },
+      required: ["dailyCalories", "meals"]
+    },
+    macrosPlan: {
+      type: "object",
+      properties: {
+        dailyCalories: { type: "integer" },
+        proteinGrams: { type: "integer" },
+        carbsGrams: { type: "integer" },
+        fatGrams: { type: "integer" }
+      },
+      required: ["dailyCalories", "proteinGrams", "carbsGrams", "fatGrams"]
+    },
+    grocerylistPlan: {
+      type: "object",
+      properties: {
+        categories: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              items: { type: "array", items: { type: "string" } }
+            },
+            required: ["name", "items"]
+          }
+        }
+      },
+      required: ["categories"]
+    }
+  },
+  required: ["workoutPlan", "dietPlan", "macrosPlan", "grocerylistPlan"]
+};
+
+const callGeminiChat = async (
   messages: Array<{ role: string; content: string }>
 ) => {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), GROQ_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
 
   let response: Response;
   try {
     response = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
+      `${geminiBaseUrl}/chat/completions`,
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${groqApiKey}`,
+          Authorization: `Bearer ${geminiApiKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: groqModel,
+          model: geminiModel,
           messages,
-          temperature: 0.2, // Lowering temperature reduces structural variance
-          response_format: { type: "json_object" }, // <--- FORCES JSON OUTPUT
+          temperature: 0.2,
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "fitnessPlan",
+              strict: true,
+              schema: fitnessPlanSchema
+            }
+          }
         }),
         signal: controller.signal,
       }
@@ -86,7 +176,7 @@ const callGroqChat = async (
   } catch (err: any) {
     clearTimeout(timeoutId);
     if (err?.name === "AbortError") {
-      throw new Error(`Groq request timed out after ${GROQ_TIMEOUT_MS / 1000}s`);
+      throw new Error(`Gemini request timed out after ${GEMINI_TIMEOUT_MS / 1000}s`);
     }
     throw err;
   } finally {
@@ -95,8 +185,8 @@ const callGroqChat = async (
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error(`Groq HTTP error: status=${response.status}, body=${errorText.slice(0, 500)}`);
-    throw new Error(`Groq request failed (${response.status}): ${errorText.slice(0, 300)}`);
+    console.error(`Gemini HTTP error: status=${response.status}, body=${errorText.slice(0, 500)}`);
+    throw new Error(`Gemini request failed (${response.status}): ${errorText.slice(0, 300)}`);
   }
 
   const data = await response.json();
@@ -108,26 +198,26 @@ const callGroqChat = async (
 
   if (!content || !content.trim()) {
     console.error(
-      "Groq returned empty content. Full response:",
+      "Gemini returned empty content. Full response:",
       JSON.stringify(data).slice(0, 2000)
     );
     throw new Error(
-      `Groq returned empty content. finish_reason=${choice?.finish_reason ?? "unknown"}`
+      `Gemini returned empty content. finish_reason=${choice?.finish_reason ?? "unknown"}`
     );
   }
 
   console.log(
-    `Groq response OK: finish_reason=${choice?.finish_reason}, content_length=${content.length}`
+    `Gemini response OK: finish_reason=${choice?.finish_reason}, content_length=${content.length}`
   );
   return content;
 };
 
 const generateFitnessPlan = async (prompt: string) =>
-  callGroqChat([
+  callGeminiChat([
     {
       role: "system",
       content:
-        "Return ONLY valid JSON. Do not include markdown, commentary, or extra keys.",
+        "You are an expert fitness planner. Return a valid fitness plan matching the requested JSON schema structure.",
     },
     { role: "user", content: prompt },
   ]);
@@ -285,11 +375,11 @@ http.route({
     // Helper: classify error into a stable error code
     const classifyError = (err: unknown): string => {
       const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes("timed out")) return "GROQ_TIMEOUT";
+      if (msg.includes("timed out")) return "GEMINI_TIMEOUT";
       if (msg.includes("empty content")) return "AI_EMPTY_RESPONSE";
       if (msg.includes("not valid JSON") || msg.includes("No JSON object boundaries"))
         return "AI_INVALID_JSON";
-      if (msg.includes("Groq request failed")) return "GROQ_REQUEST_FAILED";
+      if (msg.includes("Gemini request failed")) return "GEMINI_REQUEST_FAILED";
       return "INTERNAL_ERROR";
     };
 
@@ -349,80 +439,41 @@ http.route({
         );
       }
 
-      console.log(`Cache MISS for cacheKey=${cacheKey}. Calling Groq...`);
+      console.log(`Cache MISS for cacheKey=${cacheKey}. Calling Gemini...`);
 
-      const unifiedPrompt = `You are an experienced fitness and nutrition coach creating a complete plan in a single response.
+      const unifiedPrompt = `Create a complete fitness and nutrition plan based on this user profile:
 
-User profile:
-Age: ${age}
-Height: ${height}
-Weight: ${weight}
-Gender: ${gender}
-Status: ${status}
-Body fat %: ${body_fat}
-Injuries or limitations: ${injuries}
-Available days for workout: ${workout_days}
-Target timeline: ${target_timeline}
-Fitness goal: ${fitness_goal}
-Fitness level: ${fitness_level}
-Preferred training style: ${training_style}
-Preferred workout time: ${workout_time}
-Available equipment: ${available_equipment}
-Location: ${city_region}, ${country_region}
-Working hours: ${working_hours}
-Sleep hours: ${sleep_hours}
-Stress level: ${stress_level}
-Daily calories target (user input): ${daily_calories}
-Dietary restrictions: ${dietary_restrictions}
-Food allergies: ${food_allergies}
-Meals per day: ${meals_per_day}
-Protein target (g): ${protein_target}
-Carbs target (g): ${carbs_target}
-Fat target (g): ${fat_target}
+- Age: ${age}
+- Height: ${height}
+- Weight: ${weight}
+- Gender: ${gender}
+- Status: ${status}
+- Body fat: ${body_fat}
+- Injuries/Limitations: ${injuries}
+- Workout days: ${workout_days}
+- Target timeline: ${target_timeline}
+- Goal: ${fitness_goal}
+- Level: ${fitness_level}
+- Training style: ${training_style}
+- Workout time: ${workout_time}
+- Equipment: ${available_equipment}
+- Location: ${city_region}, ${country_region}
+- Working hours: ${working_hours}
+- Sleep: ${sleep_hours}
+- Stress level: ${stress_level}
+- Target daily calories: ${daily_calories}
+- Dietary restrictions: ${dietary_restrictions}
+- Food allergies: ${food_allergies}
+- Meals per day: ${meals_per_day}
+- Target protein (g): ${protein_target}
+- Target carbs (g): ${carbs_target}
+- Target fat (g): ${fat_target}
 
 Requirements:
-- Consider muscle group splits to avoid overtraining consecutive days.
-- Match exercises to fitness level and injuries.
-- Align workouts and diet to the fitness goal and timeline.
-- Prefer local foods based on the user's location.
-
-CRITICAL SCHEMA INSTRUCTIONS:
-- Return ONLY valid JSON matching the exact structure below.
-- Do NOT wrap your response in markdown text blocks (do NOT use \`\`\`json).
-- Every property specified must be present, and arrays must not be empty.
-- Ensure all numbers (sets, reps, calories, grams) are actual JSON numbers, not strings.
-
-Return a JSON object with this EXACT structure:
-{
-  "workoutPlan": {
-    "schedule": ["Monday", "Wednesday", "Friday"],
-    "exercises": [
-      {
-        "day": "Monday",
-        "routines": [
-          { "name": "Exercise Name", "sets": 3, "reps": 10 }
-        ]
-      }
-    ]
-  },
-  "dietPlan": {
-    "dailyCalories": 2000,
-    "meals": [
-      { "name": "Breakfast", "foods": ["Oatmeal", "Greek yogurt"] }
-    ]
-  },
-  "macrosPlan": {
-    "dailyCalories": 2200,
-    "proteinGrams": 160,
-    "carbsGrams": 240,
-    "fatGrams": 70
-  },
-  "grocerylistPlan": {
-    "categories": [
-      { "name": "Proteins", "items": ["Chicken breast", "Greek yogurt"] }
-    ]
-  }
-}`;
+- Plan balanced muscle group splits to avoid overtraining.
+- Select exercises adapted to the user's fitness level and injuries.
+- Align workout frequency, training style, and daily calories directly with the stated goal and timeline.
+- Select food recommendations local to the user's country/city region.`;
 
       // --- Attempt 1: generate + parse ---
       let parsedPlan: any;
@@ -430,21 +481,14 @@ Return a JSON object with this EXACT structure:
         const rawPlanText = await generateFitnessPlan(unifiedPrompt);
         parsedPlan = safeParseJson(rawPlanText, "unified-plan");
       } catch (firstError) {
-        // --- Attempt 2: retry with stricter prompt ---
+        // --- Attempt 2: retry ---
         console.warn(
-          "First Groq attempt failed, retrying with stricter prompt:",
+          "First Gemini attempt failed, retrying once:",
           firstError instanceof Error ? firstError.message : String(firstError)
         );
 
         try {
-          const retryRaw = await callGroqChat([
-            {
-              role: "system",
-              content:
-                "Your previous response was not valid JSON. You MUST return ONLY a valid JSON object. No markdown, no commentary, no explanation — just the raw JSON object.",
-            },
-            { role: "user", content: unifiedPrompt },
-          ]);
+          const retryRaw = await generateFitnessPlan(unifiedPrompt);
           parsedPlan = safeParseJson(retryRaw, "unified-plan-retry");
           console.log("Retry succeeded.");
         } catch (retryError) {

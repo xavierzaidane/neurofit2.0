@@ -15,13 +15,13 @@ export async function POST(req: NextRequest) {
     const model = modelsConfig.find(m => m.id === modelId) || modelsConfig[0];
     const personality = personalitiesConfig.find(p => p.id === personalityId) || personalitiesConfig[0];
 
-    const apiKey = process.env.GOOGLE_AI_STUDIO_API_KEY;
-    const apiBaseUrl = process.env.GOOGLE_AI_STUDIO_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai";
+    const apiKey = process.env.GOOGLE_AI_STUDIO_API_KEY_NEUROBOT;
+    const apiBaseUrl = process.env.GOOGLE_AI_STUDIO_BASE_URL_NEUROBOT || "https://generativelanguage.googleapis.com/v1beta/openai";
 
     if (!apiKey) {
       clearTimeout(timeoutId);
       return new Response(
-        JSON.stringify({ error: "GOOGLE_AI_STUDIO_API_KEY is not configured on the server. Please check your environment variables." }),
+        JSON.stringify({ error: "GOOGLE_AI_STUDIO_API_KEY_NEUROBOT is not configured on the server. Please check your environment variables." }),
         {
           status: 500,
           headers: { "Content-Type": "application/json" }
